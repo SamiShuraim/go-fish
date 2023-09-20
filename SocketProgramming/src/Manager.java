@@ -9,81 +9,27 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Manager {
-    static ArrayList<PlayerObj> players = new ArrayList<>();
+    public static ArrayList<GameObj> games = new ArrayList<>();
+    public static ArrayList<PlayerObj> players = new ArrayList<>();
+    public static Lock playersLock = new ReentrantLock();
+    public static Lock gamesLock = new ReentrantLock();
+    public static int gameId = 1;
 
     public static void main(String[] args) {
         try {
             int serverPortNumber = 80;
             ServerSocket connectionSocket = new ServerSocket(serverPortNumber);
             while (true) {
-                String returnMessage = "";
                 Socket dataSocket = connectionSocket.accept(); // accepts each request sent to it
-                BufferedReader meesageStream = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
-
-                String message = meesageStream.readLine();
-                String[] request = decipherMessage(message);
-                int function = Integer.parseInt(request[0]);
-
-                if (function == 1) {
-                    try {
-                        returnMessage = register(request) ? "SUCCESS" : "FAILURE";
-                    } catch (Exception e) {
-                        returnMessage = "FAILURE\n" + e.getMessage();
-                    }
-                } else if (function == 2) {
-
-                } else if (function == 3) {
-
-                } else if (function == 4) {
-
-                }
-
-                PrintStream socketOutput = new PrintStream(dataSocket.getOutputStream());
-                socketOutput.print(returnMessage);
-                socketOutput.flush();
-                dataSocket.close();
+                ManagerThread thread = new ManagerThread(dataSocket);
+                thread.start();
             }
-            // connectionSocket.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static String[] decipherMessage(String message) {
-        String delimeter = "="; // Does it make sense?
-        return message.split(delimeter);
-    }
-
-    public static boolean register(String[] request) {
-        String name, address;
-        int m_port, r_port, p_port;
-        name = request[1];
-        if (name.length() > 15)
-            throw new IllegalArgumentException("Invalid Request: Player name should only be 15 characters or less.");
-        try {
-            // InetSocketAddress address = new
-            // InetSocketAddress(InetAddress.getByAddress(request[2].getBytes()),
-            // Integer.parseInt(request[3]));
-            address = request[2];
-            m_port = Integer.parseInt(request[3]);
-            r_port = Integer.parseInt(request[4]);
-            p_port = Integer.parseInt(request[5]);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Error: Port needs to be a number.");
-        }
-
-        PlayerObj tmp = new PlayerObj(name, address, m_port, r_port, p_port);
-
-        for (PlayerObj player : players) {
-            if (player.equals(tmp)) {
-                return false;
-            }
-        }
-
-        players.add(tmp);
-
-        return true;
     }
 }

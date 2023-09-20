@@ -1,7 +1,10 @@
+import java.util.ArrayList;
+
 public class PlayerObj {
     final private String name;
     final private String address;
     final private int m_port, r_port, p_port;
+    private ArrayList<GameObj> inGame;
 
     public PlayerObj(String name, String address, int m_port, int r_port, int p_port) {
         this.name = name;
@@ -31,6 +34,14 @@ public class PlayerObj {
         return this.p_port;
     }
 
+    public ArrayList<GameObj> getInGame() {
+        return this.inGame;
+    }
+
+    public void setInGame(ArrayList<GameObj> inGame) {
+        this.inGame = inGame;
+    }
+
     @Override
     public boolean equals(Object o) {
         /*
@@ -41,8 +52,8 @@ public class PlayerObj {
         if (!(o instanceof PlayerObj))
             return false;
         PlayerObj obj = (PlayerObj) o;
-        return name.equals(obj.name) || (address.equals(obj.address)
-                && (m_port == obj.getM_port() || r_port == obj.getR_port() || p_port == obj.getP_port()));
+        return name.equals(obj.name) || ((address.equals(obj.address)
+                && (m_port == obj.getM_port() || r_port == obj.getR_port() || p_port == obj.getP_port())));
     }
 
 }
