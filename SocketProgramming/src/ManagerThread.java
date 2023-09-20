@@ -31,14 +31,14 @@ public class ManagerThread extends Thread {
             } else if (function == 2) { // Query players
                 Manager.playersLock.lock();
                 returnMessage = String.valueOf(Manager.players.size()) + "\n"
-                        + String.format("%3s: %-15s %-15s %-6s %-6s %6s\n", "i", "name", "address",
+                        + String.format("%3s: %-15s %-15s %-6s %-6s %-6s\n", "i", "name", "address",
                                 "m-port",
                                 "r-port", "p-port");
 
                 for (int i = 1; i <= Manager.players.size(); i++) {
                     PlayerObj player = Manager.players.get(i - 1);
-                    returnMessage += String.format("%3d: %-15s %-15s %-6d %-6d %6d\n", i, player.getName(),
-                            player.getAddress(), player.getM_port(), player.getR_port(), player.getR_port());
+                    returnMessage += String.format("%3d: %-15s %-15s %-6d %-6d %-6d\n", i, player.getName(),
+                            player.getAddress(), player.getM_port(), player.getR_port(), player.getP_port());
                 }
                 Manager.playersLock.unlock();
 
@@ -48,16 +48,16 @@ public class ManagerThread extends Thread {
                 returnMessage = String.valueOf(Manager.games.size());
                 for (int i = 1; i <= Manager.games.size(); i++) {
                     GameObj game = Manager.games.get(i - 1);
-                    returnMessage += "Game " + game.getId() + ": \n\t"
-                            + String.format("%3d: %-15s %-15s %-6d %-6d %6d (Dealer)\n",
-                                    Manager.players.indexOf(game.getDealer()), game.getDealer().getName(),
+                    returnMessage += "\nGame " + game.getId() + ": \n\t"
+                            + String.format("%3d: %-15s %-15s %-6d %-6d %-6d (Dealer)\n",
+                                    Manager.players.indexOf(game.getDealer()) + 1, game.getDealer().getName(),
                                     game.getDealer().getAddress(), game.getDealer().getM_port(),
-                                    game.getDealer().getR_port(), game.getDealer().getR_port());
+                                    game.getDealer().getR_port(), game.getDealer().getP_port());
                     for (PlayerObj player : game.getPlayers()) {
-                        returnMessage += String.format("%3d: %-15s %-15s %-6d %-6d %6d (Dealer)\n",
-                                Manager.players.indexOf(player), player.getName(),
+                        returnMessage += String.format("\t%3d: %-15s %-15s %-6d %-6d %-6d\n",
+                                Manager.players.indexOf(player) + 1, player.getName(),
                                 player.getAddress(), player.getM_port(),
-                                player.getR_port(), player.getR_port());
+                                player.getR_port(), player.getP_port());
                     }
                 }
                 Manager.playersLock.unlock();
@@ -91,9 +91,6 @@ public class ManagerThread extends Thread {
         if (name.length() > 15)
             throw new IllegalArgumentException("Invalid Request: Player name should only be 15 characters or less.");
         try {
-            // InetSocketAddress address = new
-            // InetSocketAddress(InetAddress.getByAddress(request[2].getBytes()),
-            // Integer.parseInt(request[3]));
             address = request[2];
             m_port = Integer.parseInt(request[3]);
             r_port = Integer.parseInt(request[4]);
@@ -104,12 +101,17 @@ public class ManagerThread extends Thread {
 
         PlayerObj tmp = new PlayerObj(name, address, m_port, r_port, p_port);
 
+        boolean flag = true;
+
         Manager.playersLock.lock();
         for (PlayerObj player : Manager.players) {
             if (player.equals(tmp))
-                return false;
+                flag = false;
         }
         Manager.playersLock.unlock();
+
+        if (flag == false)
+            return false;
 
         addToPlayers(tmp);
 
@@ -134,10 +136,11 @@ public class ManagerThread extends Thread {
         PlayerObj tmp = new PlayerObj(name, address, m_port, r_port, p_port);
 
         Manager.playersLock.lock();
-        for (PlayerObj player : Manager.players) {
-            if (player.equals(tmp))
+        for (PlayerObj player : Manager.players)
+            if (player.completelyEqual(tmp)) {
                 playerToRemove = player;
-        }
+            }
+
         if (playerToRemove != null)
             Manager.players.remove(playerToRemove);
 
@@ -172,16 +175,16 @@ public class ManagerThread extends Thread {
         Manager.gamesLock.lock();
         GameObj game = new GameObj(newPlayers, dealer);
         Manager.games.add(game);
-        res += "Game " + game.getId() + ": \n\t"
-                + String.format("%3d: %-15s %-15s %-6d %-6d %6d (Dealer)\n",
-                        Manager.players.indexOf(game.getDealer()), game.getDealer().getName(),
+        res += "\nGame " + game.getId() + ": \n\t"
+                + String.format("%3d: %-15s %-15s %-6d %-6d %-6d (Dealer)\n",
+                        Manager.players.indexOf(game.getDealer()) + 1, game.getDealer().getName(),
                         game.getDealer().getAddress(), game.getDealer().getM_port(),
-                        game.getDealer().getR_port(), game.getDealer().getR_port());
+                        game.getDealer().getR_port(), game.getDealer().getP_port());
         for (PlayerObj player : game.getPlayers()) {
-            res += String.format("%3d: %-15s %-15s %-6d %-6d %6d (Dealer)\n",
-                    Manager.players.indexOf(player), player.getName(),
+            res += String.format("\t%3d: %-15s %-15s %-6d %-6d %-6d\n",
+                    Manager.players.indexOf(player) + 1, player.getName(),
                     player.getAddress(), player.getM_port(),
-                    player.getR_port(), player.getR_port());
+                    player.getR_port(), player.getP_port());
         }
         Manager.gamesLock.unlock();
         Manager.playersLock.unlock();

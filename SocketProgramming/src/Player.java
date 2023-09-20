@@ -10,10 +10,14 @@ import java.util.Scanner;
 public class Player {
     public static void main(String[] args) {
         try {
-            System.out.println(args[0]);
             InetAddress acceptorHost = InetAddress.getLocalHost();
             int serverPortNum = 80;
             while (true) {
+                String name = args[1];
+                String address = InetAddress.getLocalHost().getHostAddress();
+                String m_port = args[0], r_port = String.valueOf(Integer.parseInt(args[0]) + 1),
+                        p_port = String.valueOf(Integer.parseInt(args[0]) + 2);
+
                 Socket clientSocket = new Socket(acceptorHost, serverPortNum);
                 Scanner scanner = new Scanner(System.in);
 
@@ -24,10 +28,6 @@ public class Player {
 
                 if (userChoice == 1 || userChoice == 4) {
                     // String name = scanner.nextLine();
-                    String name = "Sami";
-                    String address = InetAddress.getLocalHost().getHostAddress();
-                    String m_port = args[0], r_port = String.valueOf(Integer.parseInt(args[0]) + 1),
-                            p_port = String.valueOf(Integer.parseInt(args[0]) + 2);
                     cypheredMessage = cypherMessage(new String[] { choice, name, address, m_port, r_port, p_port });
                 } else if (userChoice == 2) {
                     cypheredMessage = "2";
@@ -35,7 +35,6 @@ public class Player {
                     cypheredMessage = "3";
                 } else if (userChoice == 5) {
                     String k = "1";
-                    String name = "Sami";
                     cypheredMessage = cypherMessage(new String[] { choice, name, k });
                 } else if (userChoice == 99) {
                     System.out.println("Bye Bye");

@@ -52,8 +52,31 @@ public class PlayerObj {
         if (!(o instanceof PlayerObj))
             return false;
         PlayerObj obj = (PlayerObj) o;
-        return name.equals(obj.name) || ((address.equals(obj.address)
+        return name.equals(obj.getName()) || ((address.equals(obj.getAddress())
                 && (m_port == obj.getM_port() || r_port == obj.getR_port() || p_port == obj.getP_port())));
     }
 
+    public boolean completelyEqual(Object o) {
+        if (!(o instanceof PlayerObj))
+            return false;
+        PlayerObj obj = (PlayerObj) o;
+
+        return name.equals(obj.getName()) &&
+                address.equals(obj.getAddress()) &&
+                m_port == obj.getM_port() &&
+                r_port == obj.getR_port() &&
+                p_port == obj.getP_port();
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                " name='" + getName() + "'" +
+                ", address='" + getAddress() + "'" +
+                ", m_port='" + getM_port() + "'" +
+                ", r_port='" + getR_port() + "'" +
+                ", p_port='" + getP_port() + "'" +
+                ", inGame='" + getInGame() + "'" +
+                "}";
+    }
 }
