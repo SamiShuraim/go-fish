@@ -88,8 +88,7 @@ public class ManagerThread extends Thread {
             throw new IllegalArgumentException("Error: Port needs to be a number.");
         }
 
-        PlayerObj tmp = new PlayerObj(name, address, m_port, r_port, p_port);
-        return tmp;
+        return new PlayerObj(name, address, m_port, r_port, p_port);
     }
 
     public static boolean register(String[] request) {
@@ -135,6 +134,8 @@ public class ManagerThread extends Thread {
         ArrayList<PlayerObj> newPlayers = new ArrayList<>();
         String name = request[1];
         PlayerObj dealer = null;
+        int k = Integer.parseInt(request[2]);
+
         Manager.playersLock.lock();
         for (PlayerObj player : Manager.players)
             if (player.getName().equals(name))
@@ -144,7 +145,6 @@ public class ManagerThread extends Thread {
         if (dealer == null)
             return "FAILURE";
 
-        int k = Integer.parseInt(request[2]);
         Manager.playersLock.lock();
         for (int i = 0; i < k; i++) {
             PlayerObj player = Manager.players.get((int) (Math.random() * Manager.players.size()));

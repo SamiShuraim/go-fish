@@ -26,6 +26,9 @@ public class GameObj {
     @Override
     public String toString() {
         String str = "\nGame " + getId() + ": \n"
+                + String.format("\t%3s: %-15s %-15s %-6s %-6s %-6s\n", "i", "name", "address",
+                        "m-port",
+                        "r-port", "p-port")
                 + String.format("\t%3d: %-15s %-15s %-6d %-6d %-6d (Dealer)\n",
                         Manager.players.indexOf(getDealer()) + 1, getDealer().getName(),
                         getDealer().getAddress(), getDealer().getM_port(),
