@@ -23,4 +23,20 @@ public class GameObj {
         return this.dealer;
     }
 
+    @Override
+    public String toString() {
+        String str = "\nGame " + getId() + ": \n"
+                + String.format("\t%3d: %-15s %-15s %-6d %-6d %-6d (Dealer)\n",
+                        Manager.players.indexOf(getDealer()) + 1, getDealer().getName(),
+                        getDealer().getAddress(), getDealer().getM_port(),
+                        getDealer().getR_port(), getDealer().getP_port());
+
+        for (PlayerObj player : getPlayers()) {
+            str += String.format("\t%3d: %-15s %-15s %-6d %-6d %-6d\n",
+                    Manager.players.indexOf(player) + 1, player.getName(),
+                    player.getAddress(), player.getM_port(),
+                    player.getR_port(), player.getP_port());
+        }
+        return str;
+    }
 }

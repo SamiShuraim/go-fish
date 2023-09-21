@@ -21,7 +21,7 @@ public class Manager {
 
     public static void main(String[] args) {
         try {
-            int serverPortNumber = 80;
+            int serverPortNumber = Integer.parseInt(args[0]);
             ServerSocket connectionSocket = new ServerSocket(serverPortNumber);
             while (true) {
                 Socket dataSocket = connectionSocket.accept(); // accepts each request sent to it

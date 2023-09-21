@@ -70,13 +70,7 @@ public class PlayerObj {
 
     @Override
     public String toString() {
-        return "{" +
-                " name='" + getName() + "'" +
-                ", address='" + getAddress() + "'" +
-                ", m_port='" + getM_port() + "'" +
-                ", r_port='" + getR_port() + "'" +
-                ", p_port='" + getP_port() + "'" +
-                ", inGame='" + getInGame() + "'" +
-                "}";
+        return String.format("%-15s %-15s %-6d %-6d %-6d\n", getName(),
+                getAddress(), getM_port(), getR_port(), getP_port());
     }
 }

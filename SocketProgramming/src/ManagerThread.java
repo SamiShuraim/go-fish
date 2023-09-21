@@ -16,6 +16,7 @@ public class ManagerThread extends Thread {
         try {
             String returnMessage = "FAILURE\n";
             BufferedReader meesageStream = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+            PrintStream socketOutput = new PrintStream(dataSocket.getOutputStream());
 
             String message = meesageStream.readLine();
             String[] request = decypherMessage(message);
@@ -37,8 +38,7 @@ public class ManagerThread extends Thread {
 
                 for (int i = 1; i <= Manager.players.size(); i++) {
                     PlayerObj player = Manager.players.get(i - 1);
-                    returnMessage += String.format("%3d: %-15s %-15s %-6d %-6d %-6d\n", i, player.getName(),
-                            player.getAddress(), player.getM_port(), player.getR_port(), player.getP_port());
+                    returnMessage += String.format("%3s: ", i) + player.toString();
                 }
                 Manager.playersLock.unlock();
 
@@ -48,17 +48,7 @@ public class ManagerThread extends Thread {
                 returnMessage = String.valueOf(Manager.games.size());
                 for (int i = 1; i <= Manager.games.size(); i++) {
                     GameObj game = Manager.games.get(i - 1);
-                    returnMessage += "\nGame " + game.getId() + ": \n\t"
-                            + String.format("%3d: %-15s %-15s %-6d %-6d %-6d (Dealer)\n",
-                                    Manager.players.indexOf(game.getDealer()) + 1, game.getDealer().getName(),
-                                    game.getDealer().getAddress(), game.getDealer().getM_port(),
-                                    game.getDealer().getR_port(), game.getDealer().getP_port());
-                    for (PlayerObj player : game.getPlayers()) {
-                        returnMessage += String.format("\t%3d: %-15s %-15s %-6d %-6d %-6d\n",
-                                Manager.players.indexOf(player) + 1, player.getName(),
-                                player.getAddress(), player.getM_port(),
-                                player.getR_port(), player.getP_port());
-                    }
+                    returnMessage += game.toString();
                 }
                 Manager.playersLock.unlock();
                 Manager.gamesLock.unlock();
@@ -70,7 +60,6 @@ public class ManagerThread extends Thread {
                 return;
             }
 
-            PrintStream socketOutput = new PrintStream(dataSocket.getOutputStream());
             socketOutput.print(returnMessage);
             socketOutput.flush();
             dataSocket.close();
@@ -84,7 +73,7 @@ public class ManagerThread extends Thread {
         return message.split(delimeter);
     }
 
-    public static boolean register(String[] request) {
+    public static PlayerObj constructPlayer(String[] request) {
         String name, address;
         int m_port, r_port, p_port;
         name = request[1];
@@ -100,6 +89,11 @@ public class ManagerThread extends Thread {
         }
 
         PlayerObj tmp = new PlayerObj(name, address, m_port, r_port, p_port);
+        return tmp;
+    }
+
+    public static boolean register(String[] request) {
+        PlayerObj tmp = constructPlayer(request);
 
         boolean flag = true;
 
@@ -120,20 +114,7 @@ public class ManagerThread extends Thread {
 
     public static boolean unregister(String[] request) {
         PlayerObj playerToRemove = null;
-        String name, address;
-        int m_port, r_port, p_port;
-
-        name = request[1];
-        try {
-            address = request[2];
-            m_port = Integer.parseInt(request[3]);
-            r_port = Integer.parseInt(request[4]);
-            p_port = Integer.parseInt(request[5]);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Error: Port needs to be a number.");
-        }
-
-        PlayerObj tmp = new PlayerObj(name, address, m_port, r_port, p_port);
+        PlayerObj tmp = constructPlayer(request);
 
         Manager.playersLock.lock();
         for (PlayerObj player : Manager.players)
@@ -175,17 +156,7 @@ public class ManagerThread extends Thread {
         Manager.gamesLock.lock();
         GameObj game = new GameObj(newPlayers, dealer);
         Manager.games.add(game);
-        res += "\nGame " + game.getId() + ": \n\t"
-                + String.format("%3d: %-15s %-15s %-6d %-6d %-6d (Dealer)\n",
-                        Manager.players.indexOf(game.getDealer()) + 1, game.getDealer().getName(),
-                        game.getDealer().getAddress(), game.getDealer().getM_port(),
-                        game.getDealer().getR_port(), game.getDealer().getP_port());
-        for (PlayerObj player : game.getPlayers()) {
-            res += String.format("\t%3d: %-15s %-15s %-6d %-6d %-6d\n",
-                    Manager.players.indexOf(player) + 1, player.getName(),
-                    player.getAddress(), player.getM_port(),
-                    player.getR_port(), player.getP_port());
-        }
+        res += game.toString();
         Manager.gamesLock.unlock();
         Manager.playersLock.unlock();
 

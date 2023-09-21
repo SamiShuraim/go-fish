@@ -1,25 +1,27 @@
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Player {
     public static void main(String[] args) {
         try {
-            InetAddress acceptorHost = InetAddress.getLocalHost();
-            int serverPortNum = 80;
+            String address = args[0];
+            int serverPortNum = Integer.parseInt(args[1]);
             while (true) {
-                String name = args[1];
-                String address = InetAddress.getLocalHost().getHostAddress();
-                String m_port = args[0], r_port = String.valueOf(Integer.parseInt(args[0]) + 1),
-                        p_port = String.valueOf(Integer.parseInt(args[0]) + 2);
-
-                Socket clientSocket = new Socket(acceptorHost, serverPortNum);
+                String name = args[3];
+                String m_port = args[2], r_port = String.valueOf(Integer.parseInt(args[2]) + 1),
+                        p_port = String.valueOf(Integer.parseInt(args[2]) + 2);
+                Socket clientSocket = new Socket(address, serverPortNum);
+                PrintStream outputStream = new PrintStream(clientSocket.getOutputStream());
+                BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 Scanner scanner = new Scanner(System.in);
+
+                if (name.contains("=")) {
+                    System.out.println("Error: Input must not contain '='. Please rerun program with valid input.");
+                    return;
+                }
 
                 String cypheredMessage = "";
                 printOptions();
@@ -27,7 +29,6 @@ public class Player {
                 String choice = String.valueOf(userChoice);
 
                 if (userChoice == 1 || userChoice == 4) {
-                    // String name = scanner.nextLine();
                     cypheredMessage = cypherMessage(new String[] { choice, name, address, m_port, r_port, p_port });
                 } else if (userChoice == 2) {
                     cypheredMessage = "2";
@@ -39,24 +40,17 @@ public class Player {
                 } else if (userChoice == 99) {
                     System.out.println("Bye Bye");
                     cypheredMessage = "99";
-                    (new PrintStream(clientSocket.getOutputStream())).println(cypheredMessage);
+                    outputStream.println(cypheredMessage);
                     System.exit(0);
                 }
 
-                (new PrintStream(clientSocket.getOutputStream())).println(cypheredMessage);
-                BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                outputStream.println(cypheredMessage);
                 br.lines().forEach(e -> System.out.println(e));
             }
-            // clientSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // System.out.println(register());
     }
-
-    // public static boolean register() {
-
-    // }
 
     public static void printOptions() {
         System.out.println("\nEnter any of the following numbers for the option in front of it:");
