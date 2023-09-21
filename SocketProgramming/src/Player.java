@@ -38,7 +38,7 @@ public class Player {
                     String k = "1";
                     cypheredMessage = cypherMessage(new String[] { choice, name, k });
                 } else if (userChoice == 99) {
-                    System.out.println("Bye Bye");
+                    System.out.println("Bye Bye :)");
                     cypheredMessage = "99";
                     outputStream.println(cypheredMessage);
                     System.exit(0);
@@ -54,14 +54,12 @@ public class Player {
 
     public static void printOptions() {
         System.out.println("\nEnter any of the following numbers for the option in front of it:");
-        System.out.println(" 1. Register to Go Fish");
-        System.out.println(" 2. List all currently registered players");
-        System.out.println(" 3. List all currently running games");
-        System.out.println(" 4. Unregister from Go Fish");
-        System.out.println(" 5. Start game");
-
-        System.out.println("99. Exit");
-
+        System.out.println("  1. Register to Go Fish");
+        System.out.println("  2. List all currently registered players");
+        System.out.println("  3. List all currently running games");
+        System.out.println("  4. Unregister from Go Fish");
+        System.out.println("  5. Start game");
+        System.out.println(" 99. Exit");
         System.out.print("Enter your choice: ");
     }
 

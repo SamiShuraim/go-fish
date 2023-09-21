@@ -24,7 +24,7 @@ public class Manager {
             int serverPortNumber = Integer.parseInt(args[0]);
             ServerSocket connectionSocket = new ServerSocket(serverPortNumber);
             while (true) {
-                Socket dataSocket = connectionSocket.accept(); // accepts each request sent to it
+                Socket dataSocket = connectionSocket.accept(); //accepts each request sent to it
                 ManagerThread thread = new ManagerThread(dataSocket);
                 thread.start();
             }

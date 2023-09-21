@@ -23,13 +23,13 @@ public class ManagerThread extends Thread {
 
             int function = Integer.parseInt(request[0]);
 
-            if (function == 1) { // Register player
+            if (function == 1) { //Register player
                 try {
                     returnMessage = register(request) ? "SUCCESS" : "FAILURE";
                 } catch (Exception e) {
                     returnMessage += e.getMessage();
                 }
-            } else if (function == 2) { // Query players
+            } else if (function == 2) { //Query players
                 Manager.playersLock.lock();
                 returnMessage = String.valueOf(Manager.players.size()) + "\n"
                         + String.format("%3s: %-15s %-15s %-6s %-6s %-6s\n", "i", "name", "address",
@@ -69,7 +69,7 @@ public class ManagerThread extends Thread {
     }
 
     public static String[] decypherMessage(String message) {
-        String delimeter = "="; // Does it make sense?
+        String delimeter = "="; //Does it make sense?
         return message.split(delimeter);
     }
 
