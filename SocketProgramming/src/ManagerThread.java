@@ -113,11 +113,11 @@ public class ManagerThread extends Thread {
 
     public static boolean unregister(String[] request) {
         PlayerObj playerToRemove = null;
-        PlayerObj tmp = constructPlayer(request);
+        String name = request[1];
 
         Manager.playersLock.lock();
         for (PlayerObj player : Manager.players)
-            if (player.completelyEqual(tmp)) {
+            if (player.getName().equals(name)) {
                 playerToRemove = player;
             }
 
