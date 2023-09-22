@@ -13,7 +13,7 @@ public class PlayerObj {
         this.r_port = r_port;
         this.p_port = p_port;
     }
-    
+
     public String getName() {
         return this.name;
     }

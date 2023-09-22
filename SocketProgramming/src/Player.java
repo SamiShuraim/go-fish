@@ -1,19 +1,21 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Player {
     public static void main(String[] args) {
         try {
-            String address = args[0];
+            String ServerAddress = args[0];
+            String myAddress = InetAddress.getLocalHost().getHostAddress();
             int serverPortNum = Integer.parseInt(args[1]);
             while (true) {
                 String name = args[3];
                 String m_port = args[2], r_port = String.valueOf(Integer.parseInt(args[2]) + 1),
                         p_port = String.valueOf(Integer.parseInt(args[2]) + 2);
-                Socket clientSocket = new Socket(address, serverPortNum);
+                Socket clientSocket = new Socket(ServerAddress, serverPortNum);
                 PrintStream outputStream = new PrintStream(clientSocket.getOutputStream());
                 BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 Scanner scanner = new Scanner(System.in);
@@ -29,7 +31,8 @@ public class Player {
                 String choice = String.valueOf(userChoice);
 
                 if (userChoice == 1 || userChoice == 4) {
-                    cypheredMessage = cypherMessage(new String[] { choice, name, address, m_port, r_port, p_port });
+                    cypheredMessage = cypherMessage(
+                            new String[] { choice, name, myAddress, m_port, r_port, p_port });
                 } else if (userChoice == 2) {
                     cypheredMessage = "2";
                 } else if (userChoice == 3) {
