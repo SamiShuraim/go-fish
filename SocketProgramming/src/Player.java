@@ -6,19 +6,20 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Player {
+    public static Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
         try {
-            String ServerAddress = args[0];
             String myAddress = InetAddress.getLocalHost().getHostAddress();
+            String ServerAddress = args[0];
             int serverPortNum = Integer.parseInt(args[1]);
+            String name = args[3];
+            String m_port = args[2], r_port = String.valueOf(Integer.parseInt(args[2]) + 1),
+                    p_port = String.valueOf(Integer.parseInt(args[2]) + 2);
             while (true) {
-                String name = args[3];
-                String m_port = args[2], r_port = String.valueOf(Integer.parseInt(args[2]) + 1),
-                        p_port = String.valueOf(Integer.parseInt(args[2]) + 2);
                 Socket clientSocket = new Socket(ServerAddress, serverPortNum);
                 PrintStream outputStream = new PrintStream(clientSocket.getOutputStream());
                 BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                Scanner scanner = new Scanner(System.in);
 
                 if (name.contains("=")) {
                     System.out.println("Error: Input must not contain '='. Please rerun program with valid input.");
@@ -38,7 +39,13 @@ public class Player {
                 } else if (userChoice == 3) {
                     cypheredMessage = "3";
                 } else if (userChoice == 5) {
-                    String k = "1";
+                    System.out.print("How many other players do you want to play wtih you? [1:5]: ");
+                    String tmp = scanner.nextLine();
+                    String k = tmp.equals("") ? scanner.nextLine() : tmp;
+                    if (!k.matches("^[1-5]$")) {
+                        System.out.println("Error. Number should be between 1 and 5.");
+                        continue;
+                    }
                     cypheredMessage = cypherMessage(new String[] { choice, name, k });
                 } else if (userChoice == 99) {
                     System.out.println("Bye Bye :)");
