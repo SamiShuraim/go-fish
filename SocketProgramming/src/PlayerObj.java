@@ -56,18 +56,6 @@ public class PlayerObj {
                 && (m_port == obj.getM_port() || r_port == obj.getR_port() || p_port == obj.getP_port())));
     }
 
-    public boolean completelyEqual(Object o) {
-        if (!(o instanceof PlayerObj))
-            return false;
-        PlayerObj obj = (PlayerObj) o;
-
-        return name.equals(obj.getName()) &&
-                address.equals(obj.getAddress()) &&
-                m_port == obj.getM_port() &&
-                r_port == obj.getR_port() &&
-                p_port == obj.getP_port();
-    }
-
     @Override
     public String toString() {
         return String.format("%-15s %-15s %-6d %-6d %-6d\n", getName(),

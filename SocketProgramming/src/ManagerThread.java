@@ -23,35 +23,16 @@ public class ManagerThread extends Thread {
 
             int function = Integer.parseInt(request[0]);
 
-            if (function == 1) { //Register player
+            if (function == 1) { // Register player
                 try {
                     returnMessage = register(request) ? "SUCCESS" : "FAILURE";
                 } catch (Exception e) {
                     returnMessage += e.getMessage();
                 }
-            } else if (function == 2) { //Query players
-                Manager.playersLock.lock();
-                returnMessage = String.valueOf(Manager.players.size()) + "\n"
-                        + String.format("%3s: %-15s %-15s %-6s %-6s %-6s\n", "i", "name", "address",
-                                "m-port",
-                                "r-port", "p-port");
-
-                for (int i = 1; i <= Manager.players.size(); i++) {
-                    PlayerObj player = Manager.players.get(i - 1);
-                    returnMessage += String.format("%3s: ", i) + player.toString();
-                }
-                Manager.playersLock.unlock();
-
+            } else if (function == 2) { // Query players
+                returnMessage = getAllPlayers();
             } else if (function == 3) {
-                Manager.gamesLock.lock();
-                Manager.playersLock.lock();
-                returnMessage = String.valueOf(Manager.games.size());
-                for (int i = 1; i <= Manager.games.size(); i++) {
-                    GameObj game = Manager.games.get(i - 1);
-                    returnMessage += game.toString();
-                }
-                Manager.playersLock.unlock();
-                Manager.gamesLock.unlock();
+                returnMessage = getAllGames();
             } else if (function == 4) {
                 returnMessage = unregister(request) ? "SUCCESS" : "FAILURE";
             } else if (function == 5) {
@@ -69,7 +50,7 @@ public class ManagerThread extends Thread {
     }
 
     public static String[] decypherMessage(String message) {
-        String delimeter = "="; //Does it make sense?
+        String delimeter = "="; // Does it make sense?
         return message.split(delimeter);
     }
 
@@ -109,6 +90,34 @@ public class ManagerThread extends Thread {
         addToPlayers(tmp);
 
         return true;
+    }
+
+    public static String getAllPlayers() {
+        Manager.playersLock.lock();
+        String returnMessage = String.valueOf(Manager.players.size()) + "\n"
+                + String.format("%3s: %-15s %-15s %-6s %-6s %-6s\n", "i", "name", "address",
+                        "m-port",
+                        "r-port", "p-port");
+
+        for (int i = 1; i <= Manager.players.size(); i++) {
+            PlayerObj player = Manager.players.get(i - 1);
+            returnMessage += String.format("%3s: ", i) + player.toString();
+        }
+        Manager.playersLock.unlock();
+        return returnMessage;
+    }
+
+    public static String getAllGames() {
+        Manager.gamesLock.lock();
+        Manager.playersLock.lock();
+        String returnMessage = String.valueOf(Manager.games.size());
+        for (int i = 1; i <= Manager.games.size(); i++) {
+            GameObj game = Manager.games.get(i - 1);
+            returnMessage += game.toString();
+        }
+        Manager.playersLock.unlock();
+        Manager.gamesLock.unlock();
+        return returnMessage;
     }
 
     public static boolean unregister(String[] request) {
