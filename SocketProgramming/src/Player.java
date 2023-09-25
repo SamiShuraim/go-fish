@@ -9,6 +9,13 @@ public class Player {
     public static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
+        /*
+         * Establishes connection with manager.
+         * Shows options to player and awaits their choice.
+         * Sends cyphered message to manager and waits response.
+         * Prints response for player to see.
+         * Repeats process.
+         */
         try {
             String myAddress = InetAddress.getLocalHost().getHostAddress();
             String ServerAddress = args[0];

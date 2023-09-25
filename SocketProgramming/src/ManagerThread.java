@@ -13,12 +13,19 @@ public class ManagerThread extends Thread {
     }
 
     public void run() {
+        /*
+         * Once thread is started, it waits fot a message from the player.
+         * Once recieved, it decyphers it and starts carrying out the instruction.
+         * Returns a message of either "SUCCESS", "FAILURE", or "FAILURE" with a special
+         * error message.
+         * Terminates after sending response back to player.
+         */
         try {
             String returnMessage = "FAILURE\n";
             BufferedReader meesageStream = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
             PrintStream socketOutput = new PrintStream(dataSocket.getOutputStream());
 
-            String message = meesageStream.readLine();
+            String message = meesageStream.readLine(); // Message from player
             String[] request = decypherMessage(message);
 
             int function = Integer.parseInt(request[0]);
@@ -31,30 +38,33 @@ public class ManagerThread extends Thread {
                 }
             } else if (function == 2) { // Query players
                 returnMessage = getAllPlayers();
-            } else if (function == 3) {
+            } else if (function == 3) { // Query games
                 returnMessage = getAllGames();
-            } else if (function == 4) {
+            } else if (function == 4) { // de-register
                 returnMessage = unregister(request) ? "SUCCESS" : "FAILURE";
-            } else if (function == 5) {
+            } else if (function == 5) { // start game
                 returnMessage = startGame(request);
             } else if (function == 99) {
                 return;
             }
 
-            socketOutput.print(returnMessage);
+            socketOutput.print(returnMessage); // Sends response back to player.
             socketOutput.flush();
-            dataSocket.close();
+            dataSocket.close(); // Terminates.
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public static String[] decypherMessage(String message) {
-        String delimeter = "="; // Does it make sense?
+        String delimeter = "=";
         return message.split(delimeter);
     }
 
     public static PlayerObj constructPlayer(String[] request) {
+        /*
+         * Validates info given by player and then creates and returns playerObj.
+         */
         String name, address;
         int m_port, r_port, p_port;
         name = request[1];
@@ -73,11 +83,17 @@ public class ManagerThread extends Thread {
     }
 
     public static boolean register(String[] request) {
+        /*
+         * Checks if player can be registered and then adds them to player list.
+         * Player can be registered if:
+         * No other player has the same username.
+         * No other player has the same address and port numbers.
+         */
         PlayerObj tmp = constructPlayer(request);
 
         boolean flag = true;
 
-        Manager.playersLock.lock();
+        Manager.playersLock.lock(); // Locks out other threads from accessing "players" list
         for (PlayerObj player : Manager.players) {
             if (player.equals(tmp))
                 flag = false;
@@ -93,6 +109,10 @@ public class ManagerThread extends Thread {
     }
 
     public static String getAllPlayers() {
+        /*
+         * Goes over all players, constructing a string that carries all of their
+         * information to be later sent as the message to player.
+         */
         Manager.playersLock.lock();
         String returnMessage = String.valueOf(Manager.players.size()) + "\n"
                 + String.format("%3s: %-15s %-15s %-6s %-6s %-6s\n", "i", "name", "address",
@@ -108,7 +128,11 @@ public class ManagerThread extends Thread {
     }
 
     public static String getAllGames() {
-        Manager.gamesLock.lock();
+        /*
+         * Goes over all games, constructing a string that carries all of their
+         * information to be later sent as the message to player.
+         */
+        Manager.gamesLock.lock(); // Locks out other threads from accessing "gasmes" list
         Manager.playersLock.lock();
         String returnMessage = String.valueOf(Manager.games.size());
         for (int i = 1; i <= Manager.games.size(); i++) {
@@ -121,6 +145,10 @@ public class ManagerThread extends Thread {
     }
 
     public static boolean unregister(String[] request) {
+        /*
+         * De-registers the player with the same name as the one making the request.
+         * With no login system, this can be abused heavily.
+         */
         PlayerObj playerToRemove = null;
         String name = request[1];
 
@@ -139,6 +167,12 @@ public class ManagerThread extends Thread {
     }
 
     public static String startGame(String[] request) {
+        /*
+         * Finds the playerObj form of the dealer by their name.
+         * Randomly selects k other players from "players" list.
+         * Creates gameObj, adds it to "games" list, and returns a string representing
+         * it.
+         */
         String res = "";
         ArrayList<PlayerObj> newPlayers = new ArrayList<>();
         String name = request[1];

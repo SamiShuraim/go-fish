@@ -20,11 +20,14 @@ public class Manager {
     public static int gameId = 1;
 
     public static void main(String[] args) {
+        /*
+         * Waits for each request and creates a thread for it.
+         */
         try {
             int serverPortNumber = Integer.parseInt(args[0]);
             ServerSocket connectionSocket = new ServerSocket(serverPortNumber);
             while (true) {
-                Socket dataSocket = connectionSocket.accept(); //accepts each request sent to it
+                Socket dataSocket = connectionSocket.accept(); // accepts each request sent to it
                 ManagerThread thread = new ManagerThread(dataSocket);
                 thread.start();
             }

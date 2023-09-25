@@ -48,12 +48,14 @@ public class PlayerObj {
          * Returns true if new user
          * has the same name as another user or
          * has the same address and port number of either m, r, or p.
+         * With the way we designed the port assignment, this comparison will suffice to
+         * catch any invalid port numbers.
          */
         if (!(o instanceof PlayerObj))
             return false;
         PlayerObj obj = (PlayerObj) o;
         return name.equals(obj.getName()) || ((address.equals(obj.getAddress())
-                && (m_port == obj.getM_port() || r_port == obj.getR_port() || p_port == obj.getP_port())));
+                && (m_port == obj.getM_port() || m_port == obj.getR_port() || m_port == obj.getP_port())));
     }
 
     @Override
