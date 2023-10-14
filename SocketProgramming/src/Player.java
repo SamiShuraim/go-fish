@@ -191,7 +191,7 @@ class InGameThread extends Thread {
             setup();
             System.out.println("You are registered successfully.");
             while (true) {
-
+                
             }
         } catch (UnknownHostException e) {
             // TODO Auto-generated catch block

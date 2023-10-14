@@ -4,6 +4,7 @@ public class GameObj {
     private final int id;
     private final ArrayList<PlayerObj> players;
     private final PlayerObj dealer;
+    private Deck deck = new Deck();
 
     public GameObj(ArrayList<PlayerObj> players, PlayerObj dealer) {
         this.id = Manager.gameId++;

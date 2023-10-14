@@ -8,6 +8,7 @@ public class PlayerObj {
     final private int m_port, r_port, p_port;
     private ArrayList<GameObj> inGame;
     final private InetAddress inetAddress;
+    private ArrayList<Card> hand = new ArrayList<Card>();
 
     public PlayerObj(String name, String address, int m_port, int r_port, int p_port) throws UnknownHostException {
         this.name = name;
