@@ -302,9 +302,11 @@ class InGameThread extends Thread {
         thisGame = new GameObj(players, dealer, Integer.parseInt(gameId));
     }
 
-    public static void sendToPeer(String message, int peerNum) {
-
+    public void sendToPeer(String message, int peerNum) throws IOException {
+        PlayerObj p = thisGame.getPlayers().get(peerNum - 1);
         byte[] buffer = message.getBytes();
-        DatagramPacket packet;
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, p.getInetAddress(), p.getP_port());
+
+        socket_p.send(packet);
     }
 }
