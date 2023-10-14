@@ -141,7 +141,6 @@ public class Player {
             throws IOException, InterruptedException {
         if (!dealer) {
             gameInfo = new String(buffer);
-            System.out.println(gameInfo);
             String[] arr;
             String temp;
             temp = String
@@ -149,7 +148,6 @@ public class Player {
             arr = gameInfo.split("\n");
             arr[gameInfo.split("\n").length - 1] = temp;
             gameInfo = String.join("\n", arr);
-            System.out.println(gameInfo);
         } else
             gameInfo = gameInfo + "\n" + k;
 
@@ -194,10 +192,8 @@ class InGameThread extends Thread {
 
             }
         } catch (UnknownHostException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
