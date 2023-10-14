@@ -9,6 +9,7 @@ public class PlayerObj {
     private ArrayList<GameObj> inGame;
     final private InetAddress inetAddress;
     private ArrayList<Card> hand = new ArrayList<Card>();
+    private ArrayList<Card>[] basket;
 
     public PlayerObj(String name, String address, int m_port, int r_port, int p_port) throws UnknownHostException {
         this.name = name;
@@ -43,12 +44,24 @@ public class PlayerObj {
         return this.p_port;
     }
 
+    public ArrayList<Card> getHand(){
+        return this.hand;
+    }
+
+    public ArrayList<Card>[] getBasket(){
+        return this.basket;
+    }
+
     public ArrayList<GameObj> getInGame() {
         return this.inGame;
     }
 
     public void setInGame(ArrayList<GameObj> inGame) {
         this.inGame = inGame;
+    }
+
+    public void fishing(String rank){
+
     }
 
     @Override

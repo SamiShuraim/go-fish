@@ -28,6 +28,10 @@ public class GameObj {
         return this.dealer;
     }
 
+    public Deck getDeck(){
+        return deck;
+    }
+
     @Override
     public String toString() {
         String str = "\nGame " + getId() + ": \n"
