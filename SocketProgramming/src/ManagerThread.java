@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class ManagerThread extends Thread {
@@ -21,7 +22,7 @@ public class ManagerThread extends Thread {
          * Terminates after sending response back to player.
          */
         try {
-            String returnMessage = "FAILURE\n";
+            String returnMessage = "";
             BufferedReader meesageStream = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
             PrintStream socketOutput = new PrintStream(dataSocket.getOutputStream());
 
@@ -34,7 +35,7 @@ public class ManagerThread extends Thread {
                 try {
                     returnMessage = register(request) ? "SUCCESS" : "FAILURE";
                 } catch (Exception e) {
-                    returnMessage += e.getMessage();
+                    returnMessage = "FAILURE\n" + e.getMessage();
                 }
             } else if (function == 2) { // Query players
                 returnMessage = getAllPlayers();
@@ -44,6 +45,8 @@ public class ManagerThread extends Thread {
                 returnMessage = unregister(request) ? "SUCCESS" : "FAILURE";
             } else if (function == 5) { // start game
                 returnMessage = startGame(request);
+            } else if (function == 6) {
+                returnMessage = endGame(request);
             } else if (function == 99) {
                 return;
             }
@@ -61,7 +64,7 @@ public class ManagerThread extends Thread {
         return message.split(delimeter);
     }
 
-    public static PlayerObj constructPlayer(String[] request) {
+    public static PlayerObj constructPlayer(String[] request) throws UnknownHostException {
         /*
          * Validates info given by player and then creates and returns playerObj.
          */
@@ -82,7 +85,7 @@ public class ManagerThread extends Thread {
         return new PlayerObj(name, address, m_port, r_port, p_port);
     }
 
-    public static boolean register(String[] request) {
+    public static boolean register(String[] request) throws UnknownHostException {
         /*
          * Checks if player can be registered and then adds them to player list.
          * Player can be registered if:
@@ -173,7 +176,7 @@ public class ManagerThread extends Thread {
          * Creates gameObj, adds it to "games" list, and returns a string representing
          * it.
          */
-        String res = "";
+        String res = "SUCCESS";
         ArrayList<PlayerObj> newPlayers = new ArrayList<>();
         String name = request[1];
         PlayerObj dealer = null;
@@ -199,9 +202,27 @@ public class ManagerThread extends Thread {
         Manager.gamesLock.lock();
         GameObj game = new GameObj(newPlayers, dealer);
         Manager.games.add(game);
-        res += game.toString();
+        res += "\n" + game.toString();
         Manager.gamesLock.unlock();
         Manager.playersLock.unlock();
+
+        return res;
+    }
+
+    public static String endGame(String[] request) {
+        String res = "FAILURE\n";
+        int gameId = Integer.valueOf(request[1]);
+        String playerName = request[2];
+
+        Manager.gamesLock.lock();
+        for (GameObj g : Manager.games) {
+            if (g.getId() == gameId && g.getDealer().getName().equals(playerName)) {
+                res = "SUCCESS\n";
+                Manager.games.remove(g);
+                break;
+            }
+        }
+        Manager.gamesLock.unlock();
 
         return res;
     }
