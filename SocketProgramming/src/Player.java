@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -66,9 +67,7 @@ public class Player {
                 DatagramPacket datagram = new DatagramPacket(buffer, 350);
                 while (getUserInputThread.isAlive()) {
                     try {
-                        System.out.println("Waiting for datagram");
                         socket_r.receive(datagram);
-                        System.out.println("Started ingame thread");
                         startInGameThread(false, 0, buffer);
                         inGameThread.join();
                         break;
@@ -103,7 +102,7 @@ public class Player {
                     cypheredMessage = cypherMessage(new String[] { choice, name, k });
                     outputStream_m.println(cypheredMessage);
                     if (br_m.readLine().startsWith("SUCCESS")) {
-                        br_m.lines().forEach(e -> gameInfo += e + "\n");
+                        br_m.lines().forEach(e -> gameInfo += e);
                         startInGameThread(true, Integer.valueOf(k), null);
                     }
 
@@ -135,6 +134,11 @@ public class Player {
             res += str + "=";
         }
         return res.substring(0, res.length() - 1);
+    }
+
+    public static String[] decypherMessage(String message) {
+        String delimeter = "=";
+        return message.split(delimeter);
     }
 
     public static void startInGameThread(boolean dealer, int k, byte[] buffer)
@@ -177,6 +181,7 @@ class GetUserInputThread extends Thread {
 class InGameThread extends Thread {
     DatagramSocket socket_r;
     DatagramSocket socket_p;
+    GameObj thisGame;
 
     public InGameThread(DatagramSocket socket_r, DatagramSocket socket_p) {
         this.socket_r = socket_r;
@@ -189,7 +194,7 @@ class InGameThread extends Thread {
             setup();
             System.out.println("You are registered successfully.");
             while (true) {
-                
+
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -198,58 +203,108 @@ class InGameThread extends Thread {
         }
     }
 
-    public void setup() throws IOException {
-        boolean foundMyself = false;
-        boolean finalPlayerNotDealer = false;
-        PlayerObj nextPlayer = null;
-        PlayerObj dealer = null;
-        for (int i = 3; i < Player.gameInfo.split("\n").length - 2; i++) {
-            String s = Player.gameInfo.split("\n")[i];
+    // public void setup() throws IOException {
+    // boolean foundMyself = false;
+    // boolean finalPlayerNotDealer = false;
+    // PlayerObj nextPlayer = null;
+    // PlayerObj dealer = null;
+    // for (int i = 3; i < Player.gameInfo.split("\n").length - 2; i++) {
+    // String s = Player.gameInfo.split("\n")[i];
 
-            if (Player.gameInfo.split("\n")[Player.gameInfo.split("\n").length - 1].equals("0"))
-                return;
+    // if (Player.gameInfo.split("\n")[Player.gameInfo.split("\n").length -
+    // 1].equals("0"))
+    // return;
 
-            String[] res = findRealStrings(s);
-            PlayerObj temp = new PlayerObj(res[0], res[1], Integer.parseInt(res[2]), Integer.parseInt(res[3]),
-                    Integer.parseInt(res[4]));
-            if (temp.getName().equals(Player.name)) {
-                foundMyself = true;
-                continue;
-            }
+    // String[] res = findRealStrings(s);
+    // PlayerObj temp = new PlayerObj(res[0], res[1], Integer.parseInt(res[2]),
+    // Integer.parseInt(res[3]),
+    // Integer.parseInt(res[4]));
+    // if (temp.getName().equals(Player.name)) {
+    // foundMyself = true;
+    // continue;
+    // }
 
-            if (s.trim().substring(0, 3).trim().equals("1")) {
-                res = findRealStrings(s);
-                dealer = new PlayerObj(res[0], res[1], Integer.parseInt(res[2]), Integer.parseInt(res[3]),
-                        Integer.parseInt(res[4]));
-            }
+    // if (s.trim().substring(0, 3).trim().equals("1")) {
+    // res = findRealStrings(s);
+    // dealer = new PlayerObj(res[0], res[1], Integer.parseInt(res[2]),
+    // Integer.parseInt(res[3]),
+    // Integer.parseInt(res[4]));
+    // }
 
-            if (foundMyself) {
-                res = findRealStrings(s);
-                nextPlayer = new PlayerObj(res[0], res[1], Integer.parseInt(res[2]), Integer.parseInt(res[3]),
-                        Integer.parseInt(res[4]));
-                finalPlayerNotDealer = true;
+    // if (foundMyself) {
+    // res = findRealStrings(s);
+    // nextPlayer = new PlayerObj(res[0], res[1], Integer.parseInt(res[2]),
+    // Integer.parseInt(res[3]),
+    // Integer.parseInt(res[4]));
+    // finalPlayerNotDealer = true;
+    // break;
+    // }
+    // }
+
+    // if (!finalPlayerNotDealer) {
+    // System.out.println("Next is dealer");
+    // nextPlayer = dealer;
+    // }
+
+    // sendToNextPlayer(Player.gameInfo, nextPlayer);
+    // }
+
+    public void setup() throws NumberFormatException, IOException {
+        if (Player.gameInfo.split("\n")[1].trim().equals("0"))
+            return;
+
+        createGameObj(Player.gameInfo);
+
+        int i = 0;
+        for (i = 0; i < thisGame.getPlayers().size(); i++) {
+            if (thisGame.getPlayers().get(i).getName().equals(Player.name))
                 break;
-            }
         }
 
-        if (!finalPlayerNotDealer) {
-            System.out.println("Next is dealer");
-            nextPlayer = dealer;
-        }
+        sendToNextPlayer(Player.gameInfo);
+    }
 
-        byte[] buffer = Player.gameInfo.getBytes();
+    public static PlayerObj createPlayerObj(String[] res) throws NumberFormatException, UnknownHostException {
+        return new PlayerObj(res[0], res[1], Integer.parseInt(res[2]), Integer.parseInt(res[3]),
+                Integer.parseInt(res[4]));
+    }
+
+    public void sendToNextPlayer(String message) throws IOException {
+        PlayerObj nextPlayer = getNextPlayer();
+        byte[] buffer = message.getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, nextPlayer.getInetAddress(),
                 nextPlayer.getR_port());
         socket_r.send(packet);
     }
 
-    public static String[] findRealStrings(String s) {
-        String[] res = new String[5];
-        res[0] = s.substring(5, 20).trim();
-        res[1] = s.substring(20, 36).trim();
-        res[2] = s.substring(37, 43).trim();
-        res[3] = s.substring(44, 50).trim();
-        res[4] = s.substring(51, 57).trim();
-        return res;
+    public PlayerObj getNextPlayer() {
+        int i = 0;
+        for (i = 0; i < thisGame.getPlayers().size(); i++) {
+            if (thisGame.getPlayers().get(i).getName().equals(Player.name))
+                break;
+        }
+        return thisGame.getPlayers().get((i + 1) % thisGame.getPlayers().size());
+    }
+
+    public void createGameObj(String gameInfo) throws NumberFormatException, UnknownHostException {
+        String[] strings = Player.decypherMessage(gameInfo.split("\n")[0]);
+        String gameId = strings[0];
+        PlayerObj dealer = createPlayerObj(new String[] { strings[1], strings[2], strings[3], strings[4], strings[5] });
+        ArrayList<PlayerObj> players = new ArrayList<>();
+
+        for (int i = 0; i < (strings.length - 1) / 5; i++) {
+
+            PlayerObj temp = createPlayerObj(new String[] { strings[i * 5 + 1], strings[i * 5 + 2], strings[i * 5 + 3],
+                    strings[i * 5 + 4], strings[i * 5 + 5] });
+            players.add(temp);
+        }
+
+        thisGame = new GameObj(players, dealer, Integer.parseInt(gameId));
+    }
+
+    public static void sendToPeer(String message, int peerNum) {
+
+        byte[] buffer = message.getBytes();
+        DatagramPacket packet;
     }
 }

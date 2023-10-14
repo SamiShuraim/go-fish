@@ -2,14 +2,18 @@ import java.util.ArrayList;
 
 public class GameObj {
     private final int id;
-    private final ArrayList<PlayerObj> players;
+    private final ArrayList<PlayerObj> players; // This should include the dealer
     private final PlayerObj dealer;
     private Deck deck = new Deck();
 
-    public GameObj(ArrayList<PlayerObj> players, PlayerObj dealer) {
-        this.id = Manager.gameId++;
+    public GameObj(ArrayList<PlayerObj> players, PlayerObj dealer, int id) {
+        this.id = id;
         this.players = players;
         this.dealer = dealer;
+    }
+
+    public GameObj(ArrayList<PlayerObj> players, PlayerObj dealer) {
+        this(players, dealer, Manager.gameId++);
     }
 
     public int getId() {

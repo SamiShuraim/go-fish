@@ -64,6 +64,14 @@ public class ManagerThread extends Thread {
         return message.split(delimeter);
     }
 
+    public static String cypherMessage(String[] requestBody) {
+        String res = "";
+        for (String str : requestBody) {
+            res += str + "=";
+        }
+        return res.substring(0, res.length() - 1);
+    }
+
     public static PlayerObj constructPlayer(String[] request) throws UnknownHostException {
         /*
          * Validates info given by player and then creates and returns playerObj.
@@ -176,7 +184,7 @@ public class ManagerThread extends Thread {
          * Creates gameObj, adds it to "games" list, and returns a string representing
          * it.
          */
-        String res = "SUCCESS";
+        String res = "SUCCESS\n";
         ArrayList<PlayerObj> newPlayers = new ArrayList<>();
         String name = request[1];
         PlayerObj dealer = null;
@@ -202,7 +210,21 @@ public class ManagerThread extends Thread {
         Manager.gamesLock.lock();
         GameObj game = new GameObj(newPlayers, dealer);
         Manager.games.add(game);
-        res += "\n" + game.toString();
+
+        ArrayList<String> temp = new ArrayList<>();
+        temp.add(String.valueOf(game.getId()));
+        for (PlayerObj p : game.getPlayers()) {
+            temp.add(p.getName());
+            temp.add(p.getAddress());
+            temp.add(String.valueOf(p.getM_port()));
+            temp.add(String.valueOf(p.getR_port()));
+            temp.add(String.valueOf(p.getP_port()));
+        }
+        String[] temp2 = new String[temp.size()];
+        for (int i = 0; i < temp2.length; i++)
+            temp2[i] = temp.get(i);
+
+        res += cypherMessage(temp2);
         Manager.gamesLock.unlock();
         Manager.playersLock.unlock();
 
