@@ -1,3 +1,5 @@
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class PlayerObj {
@@ -5,13 +7,15 @@ public class PlayerObj {
     final private String address;
     final private int m_port, r_port, p_port;
     private ArrayList<GameObj> inGame;
+    final private InetAddress inetAddress;
 
-    public PlayerObj(String name, String address, int m_port, int r_port, int p_port) {
+    public PlayerObj(String name, String address, int m_port, int r_port, int p_port) throws UnknownHostException {
         this.name = name;
         this.address = address;
         this.m_port = m_port;
         this.r_port = r_port;
         this.p_port = p_port;
+        this.inetAddress = InetAddress.getByName(address);
     }
 
     public String getName() {
@@ -20,6 +24,10 @@ public class PlayerObj {
 
     public String getAddress() {
         return this.address;
+    }
+
+    public InetAddress getInetAddress() {
+        return this.inetAddress;
     }
 
     public int getM_port() {
@@ -48,12 +56,15 @@ public class PlayerObj {
          * Returns true if new user
          * has the same name as another user or
          * has the same address and port number of either m, r, or p.
+         * With the way we designed the port assignment, this comparison will suffice to
+         * catch any invalid port numbers.
          */
         if (!(o instanceof PlayerObj))
             return false;
         PlayerObj obj = (PlayerObj) o;
         return name.equals(obj.getName()) || ((address.equals(obj.getAddress())
-                && (m_port == obj.getM_port() || r_port == obj.getR_port() || p_port == obj.getP_port())));
+                && (m_port == obj.getM_port() || m_port == obj.getR_port() || m_port == obj.getP_port()
+                        || p_port == obj.getM_port() || p_port == obj.getR_port())));
     }
 
     @Override
