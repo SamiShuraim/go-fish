@@ -239,7 +239,7 @@ class InGameThread extends Thread {
                     }
                 }
                 System.out.println("Playing");
-                
+                System.out.println(getMe().showHand());
                 
 
                 sendToNextPlayer("your-move");

@@ -61,7 +61,15 @@ public class PlayerObj {
     }
 
     public void fishing(String rank){
+        
+    }
 
+    public String showHand(){
+        String str = "";
+        for(int i = 0; i < this.hand.size(); i++){
+            str = this.hand.get(i)+ ", ";
+        }
+        return str + '\n';
     }
 
     @Override
