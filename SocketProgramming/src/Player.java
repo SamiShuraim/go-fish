@@ -289,6 +289,16 @@ class InGameThread extends Thread {
 
                 boolean continuePlaying = true;
                 while (continuePlaying) {
+                    if(getMe().getHand().size()== 0){
+                        System.out.println("since you have an empty hand you may 1: draw 5 cards or 2: skip your turn");
+                        int choice = 1;
+                        if(choice == 1){
+                            for(int i = 0; i < 5; i++){
+                            if(thisGame.getDeck().getDeck().size() >  0)
+                            getMe().getHand().add(thisGame.getDeck().draw());
+                            }
+                        }
+                    }
                     System.out.print("Enter the rank of the card you want: ");
                     Player.bufferedReader = new BufferedReader(new InputStreamReader(System.in));
                     String rank = Player.bufferedReader.readLine().trim().toUpperCase();
@@ -297,6 +307,7 @@ class InGameThread extends Thread {
                         continue;
                     }
                     continuePlaying = fishing(rank);
+                    
                     System.out.println(getMe().showHand());
                 }
                 sendYourMove();
@@ -364,7 +375,10 @@ class InGameThread extends Thread {
         String[] temp = Player.decypherMessage(response[0]);
 
         if (temp[0].trim().equals("go-fish")) {
+            if(thisGame.getDeck().getDeck().size() >  0)
             getMe().getHand().add(thisGame.getDeck().draw());
+            else
+            System.out.println("The stock is empty");
             return false;
         }
 

@@ -68,6 +68,17 @@ public class PlayerObj {
         return str.substring(0, str.length() - 2) + '\n';
     }
 
+    public void checkHand(String rank){
+        ArrayList<Card> tmp = new ArrayList<Card>();
+        for (Card c : this.hand){
+            if(c.getRank() == rank)
+                tmp.add(c);
+        }
+        if(tmp.size() == 4){
+            this.deleteCard(rank);
+        }
+    }
+
     public void deleteCard(String s) {
         for (Card c : hand) {
             if (c.toString().equals(s.trim())) {
