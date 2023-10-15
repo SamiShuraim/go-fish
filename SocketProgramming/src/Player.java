@@ -196,26 +196,23 @@ class InGameThread extends Thread {
             setup();
             System.out.println("You are registered successfully.");
 
-            
-            
-
-            if(thisGame.getPlayers().size() < 3){ // Dealing cards
-                for(int i = 0; i < 7; i++){
+            if (thisGame.getPlayers().size() < 3) { // Dealing cards
+                for (int i = 0; i < 7; i++) {
 
                     thisGame.getDealer().getHand().add(thisGame.getDeck().draw());
 
-                    for(int j = 0; j < thisGame.getPlayers().size(); j++){
-                        thisGame.getPlayers().get(i).getHand().add(thisGame.getDeck().draw());
+                    for (int j = 0; j < thisGame.getPlayers().size(); j++) {
+                        thisGame.getPlayers().get(j).getHand().add(thisGame.getDeck().draw());
                     }
                 }
-                
-            } else{
-                for(int i = 0; i < 5; i++){
+
+            } else {
+                for (int i = 0; i < 5; i++) {
 
                     thisGame.getDealer().getHand().add(thisGame.getDeck().draw());
 
-                    for(int j = 0; j < thisGame.getPlayers().size(); j++){
-                        thisGame.getPlayers().get(i).getHand().add(thisGame.getDeck().draw());
+                    for (int j = 0; j < thisGame.getPlayers().size(); j++) {
+                        thisGame.getPlayers().get(j).getHand().add(thisGame.getDeck().draw());
                     }
                 }
             }
@@ -223,9 +220,9 @@ class InGameThread extends Thread {
             if (thisGame.getDealer().getName().equals(Player.name)) {
                 sendToNextPlayer("your-move");
             }
-            
 
-            while (true) { ////////////////////////////////////////////////////////// HERE ///////////////////////////////////
+            while (true) { ////////////////////////////////////////////////////////// HERE
+                           ////////////////////////////////////////////////////////// ///////////////////////////////////
                 String r, p;
                 while (true) { // waiting
                     try {
@@ -240,7 +237,6 @@ class InGameThread extends Thread {
                 }
                 System.out.println("Playing");
                 System.out.println(getMe().showHand());
-                
 
                 sendToNextPlayer("your-move");
             }

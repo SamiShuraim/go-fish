@@ -44,11 +44,11 @@ public class PlayerObj {
         return this.p_port;
     }
 
-    public ArrayList<Card> getHand(){
+    public ArrayList<Card> getHand() {
         return this.hand;
     }
 
-    public ArrayList<Card>[] getBasket(){
+    public ArrayList<Card>[] getBasket() {
         return this.basket;
     }
 
@@ -60,16 +60,16 @@ public class PlayerObj {
         this.inGame = inGame;
     }
 
-    public void fishing(String rank){
-        
+    public void fishing(String rank) {
+
     }
 
-    public String showHand(){
+    public String showHand() {
         String str = "";
-        for(int i = 0; i < this.hand.size(); i++){
-            str = this.hand.get(i)+ ", ";
+        for (int i = 0; i < this.hand.size(); i++) {
+            str += this.hand.get(i) + ", ";
         }
-        return str + '\n';
+        return str.substring(0, str.length() - 2) + '\n';
     }
 
     @Override
