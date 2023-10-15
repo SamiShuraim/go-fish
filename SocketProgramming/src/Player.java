@@ -293,13 +293,13 @@ class InGameThread extends Thread {
 
                 boolean continuePlaying = true;
                 while (continuePlaying) {
-                    if(getMe().getHand().size()== 0){
+                    if (getMe().getHand().size() == 0) {
                         System.out.println("since you have an empty hand you may 1: draw 5 cards or 2: skip your turn");
                         int choice = 1;
-                        if(choice == 1){
-                            for(int i = 0; i < 5; i++){
-                            if(thisGame.getDeck().getDeck().size() >  0)
-                            getMe().getHand().add(thisGame.getDeck().draw());
+                        if (choice == 1) {
+                            for (int i = 0; i < 5; i++) {
+                                if (thisGame.getDeck().getDeck().size() > 0)
+                                    getMe().getHand().add(thisGame.getDeck().draw());
                             }
                         }
                     }
@@ -311,7 +311,7 @@ class InGameThread extends Thread {
                         continue;
                     }
                     continuePlaying = fishing(rank);
-                    
+
                     System.out.println(getMe().showHand());
                 }
 
@@ -324,6 +324,15 @@ class InGameThread extends Thread {
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+    }
+
+    public void sendBookToAll(String rank) throws IOException {
+        String res = String.format("D%s C%s, H%s S%s", rank, rank, rank, rank);
+        for (int i = 0; i < thisGame.getPlayers().size(); i++) {
+            if (!thisGame.getPlayers().get(i).getName().equals(Player.name)) {
+                sendToPeer(res, i + 1);
+            }
         }
     }
 
@@ -388,10 +397,10 @@ class InGameThread extends Thread {
         String[] temp = Player.decypherMessage(response[0]);
 
         if (temp[0].trim().equals("go-fish")) {
-            if(thisGame.getDeck().getDeck().size() >  0)
-            getMe().getHand().add(thisGame.getDeck().draw());
+            if (thisGame.getDeck().getDeck().size() > 0)
+                getMe().getHand().add(thisGame.getDeck().draw());
             else
-            System.out.println("The stock is empty");
+                System.out.println("The stock is empty");
 
             return false;
         }
