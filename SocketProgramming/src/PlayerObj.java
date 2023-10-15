@@ -60,16 +60,21 @@ public class PlayerObj {
         this.inGame = inGame;
     }
 
-    public void fishing(String rank) {
-
-    }
-
     public String showHand() {
         String str = "";
         for (int i = 0; i < this.hand.size(); i++) {
             str += this.hand.get(i) + ", ";
         }
         return str.substring(0, str.length() - 2) + '\n';
+    }
+
+    public void deleteCard(String s) {
+        for (Card c : hand) {
+            if (c.toString().equals(s.trim())) {
+                hand.remove(c);
+                return;
+            }
+        }
     }
 
     @Override

@@ -28,7 +28,7 @@ public class GameObj {
         return this.dealer;
     }
 
-    public Deck getDeck(){
+    public Deck getDeck() {
         return deck;
     }
 
@@ -37,13 +37,9 @@ public class GameObj {
         String str = "\nGame " + getId() + ": \n"
                 + String.format("\t%3s: %-15s %-15s %-6s %-6s %-6s\n", "i", "name", "address",
                         "m-port",
-                        "r-port", "p-port")
-                + String.format("\t%3d: %-15s %-15s %-6d %-6d %-6d (Dealer)\n",
-                        1, getDealer().getName(),
-                        getDealer().getAddress(), getDealer().getM_port(),
-                        getDealer().getR_port(), getDealer().getP_port());
+                        "r-port", "p-port");
 
-        int i = 2;
+        int i = 1;
         for (PlayerObj player : getPlayers()) {
             str += String.format("\t%3d: %-15s %-15s %-6d %-6d %-6d\n",
                     i, player.getName(),
