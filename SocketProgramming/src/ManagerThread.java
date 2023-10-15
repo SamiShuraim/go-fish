@@ -194,6 +194,7 @@ public class ManagerThread extends Thread {
         for (PlayerObj player : Manager.players)
             if (player.getName().equals(name))
                 dealer = player;
+        newPlayers.add(dealer);
         Manager.playersLock.unlock();
 
         if (dealer == null)

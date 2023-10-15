@@ -48,6 +48,7 @@ public class Player {
             socket_p = new DatagramSocket(Integer.parseInt(p_port), InetAddress.getLocalHost());
 
             socket_r.setSoTimeout(1000);
+            socket_p.setSoTimeout(1000);
             while (true) {
                 if (name.contains("=")) {
                     System.out.println("Error: Input must not contain '='. Please rerun program with valid input.");
@@ -194,20 +195,41 @@ class InGameThread extends Thread {
             System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             setup();
             System.out.println("You are registered successfully.");
-            while (true) {
 
+            if (thisGame.getDealer().getName().equals(Player.name)) {
+                sendToNextPlayer("your-move");
+            }
+
+            while (true) {
+                String r, p;
+                while (true) { // waiting
+                    try {
+                        Thread.sleep(500);
+                        r = listenToSocketR();
+                        p = listenToSocketP();
+
+                        if (r != null || p != null)
+                            break;
+                    } catch (Exception e) {
+                    }
+                }
+                System.out.println("Playing");
+
+                sendToNextPlayer("your-move");
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
-    public void setup() throws NumberFormatException, IOException {
-        if (Player.gameInfo.split("\n")[1].trim().equals("0"))
+    public void setup() throws NumberFormatException, IOException, InterruptedException {
+        if (Player.gameInfo.split("\n")[1].trim().equals("-1"))
             return;
-
         createGameObj(Player.gameInfo);
 
         int i = 0;
@@ -224,12 +246,13 @@ class InGameThread extends Thread {
                 Integer.parseInt(res[4]));
     }
 
-    public void sendToNextPlayer(String message) throws IOException {
+    public void sendToNextPlayer(String message) throws IOException, InterruptedException {
         PlayerObj nextPlayer = getNextPlayer();
         byte[] buffer = message.getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, nextPlayer.getInetAddress(),
                 nextPlayer.getR_port());
         socket_r.send(packet);
+        Thread.sleep(500);
     }
 
     public PlayerObj getNextPlayer() {
@@ -246,14 +269,12 @@ class InGameThread extends Thread {
         String gameId = strings[0];
         PlayerObj dealer = createPlayerObj(new String[] { strings[1], strings[2], strings[3], strings[4], strings[5] });
         ArrayList<PlayerObj> players = new ArrayList<>();
-
         for (int i = 0; i < (strings.length - 1) / 5; i++) {
 
             PlayerObj temp = createPlayerObj(new String[] { strings[i * 5 + 1], strings[i * 5 + 2], strings[i * 5 + 3],
                     strings[i * 5 + 4], strings[i * 5 + 5] });
             players.add(temp);
         }
-
         thisGame = new GameObj(players, dealer, Integer.parseInt(gameId));
     }
 
@@ -269,8 +290,21 @@ class InGameThread extends Thread {
         try {
             byte[] buffer = new byte[350];
             DatagramPacket datagram = new DatagramPacket(buffer, 350);
-            Thread.sleep(500);
             socket_p.receive(datagram);
+            return new String(buffer);
+        } catch (SocketTimeoutException e) {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String listenToSocketR() {
+        try {
+            byte[] buffer = new byte[350];
+            DatagramPacket datagram = new DatagramPacket(buffer, 350);
+            socket_r.receive(datagram);
             return new String(buffer);
         } catch (SocketTimeoutException e) {
 
