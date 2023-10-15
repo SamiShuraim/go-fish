@@ -16,7 +16,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Player {
     public static BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
     static Lock userChoiceLock = new ReentrantLock();
-    static Lock DeckLock = new ReentrantLock();
     static int userChoice = 0;
     static String gameInfo = "";
     static String myAddress;
@@ -227,20 +226,16 @@ class InGameThread extends Thread {
                     e.printStackTrace();
                 }
             }
+            if (!thisGame.getDealer().getName().equals(Player.name))
+                thisGame.setDeck(makeDeck(x.split("\n")[1]));
 
             if (thisGame.getPlayers().size() < 3) {
                 for (int i = 0; i < 7; i++) {
-                    Player.DeckLock.lock();
                     getMe().getHand().add(thisGame.getDeck().draw());
-                    Player.DeckLock.unlock();
-                    Thread.sleep(100);
                 }
             } else {
                 for (int i = 0; i < 5; i++) {
-                    Player.DeckLock.lock();
                     getMe().getHand().add(thisGame.getDeck().draw());
-                    Player.DeckLock.unlock();
-                    Thread.sleep(100);
                 }
             }
 
@@ -290,6 +285,7 @@ class InGameThread extends Thread {
 
                 System.out.println("Playing");
                 System.out.println(getMe().showHand());
+                System.out.println(thisGame.getSeed());
 
                 boolean continuePlaying = true;
                 while (continuePlaying) {
@@ -420,7 +416,7 @@ class InGameThread extends Thread {
         String gameId = strings[0];
         PlayerObj dealer = createPlayerObj(new String[] { strings[1], strings[2], strings[3], strings[4], strings[5] });
         ArrayList<PlayerObj> players = new ArrayList<>();
-        int seed = Integer.parseInt(strings[strings.length - 1]);
+        int seed = Integer.parseInt(gameInfo.split("\n")[1].trim());
         for (int i = 0; i < (strings.length - 1) / 5; i++) {
 
             PlayerObj temp = createPlayerObj(new String[] { strings[i * 5 + 1], strings[i * 5 + 2], strings[i * 5 + 3],
