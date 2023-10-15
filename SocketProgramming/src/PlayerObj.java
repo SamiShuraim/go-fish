@@ -68,10 +68,10 @@ public class PlayerObj {
         return str.substring(0, str.length() - 2) + '\n';
     }
 
-    public String showBasket(){
+    public String showBasket() {
         String str = "";
-        for(ArrayList<Card> book : this.basket){
-            for(Card c : book){
+        for (ArrayList<Card> book : this.basket) {
+            for (Card c : book) {
                 str += c.toString() + " ";
             }
             str += "\n";
@@ -80,13 +80,13 @@ public class PlayerObj {
         return str;
     }
 
-    public boolean checkHand(String rank){
+    public boolean checkHand(String rank) {
         ArrayList<Card> tmp = new ArrayList<Card>();
-        for (Card c : this.hand){
-            if(c.getRank() == rank)
+        for (Card c : this.hand) {
+            if (c.getRank().equals(rank))
                 tmp.add(c);
         }
-        if(tmp.size() == 4){
+        if (tmp.size() == 4) {
             this.deleteCard(rank);
             this.basket.add(tmp);
             return true;

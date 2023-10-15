@@ -27,7 +27,6 @@ public class Player {
     static DatagramSocket socket_p;
     static InGameThread inGameThread;
 
-
     public static void main(String[] args) {
         /*
          * Establishes connection with manager.
@@ -197,7 +196,6 @@ class InGameThread extends Thread {
     GameObj thisGame;
     private static String[] ranks = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
 
-
     public InGameThread(DatagramSocket socket_r, DatagramSocket socket_p) {
         this.socket_r = socket_r;
         this.socket_p = socket_p;
@@ -247,7 +245,7 @@ class InGameThread extends Thread {
             } else {
                 sendTakeCards();
             }
-
+            boolean terminate = false;
             while (true) { ////////////////////////////////////////////////////////// HERE
                            ////////////////////////////////////////////////////////// ///////////////////////////////////
                 String r, p[];
@@ -265,6 +263,26 @@ class InGameThread extends Thread {
                         if (r != null && r.split("\n")[0].trim().equals("your-move")) {
                             break;
                         }
+
+                        if (r != null && r.split("\n")[0].trim().startsWith("winner")) {
+                            System.out.println("\n".repeat(20));
+                            System.out.println("THE WINNER IS: " + r.split("=")[1]);
+                            System.out.println("Enter anything to exit: ");
+                            Player.bufferedReader.readLine();
+                            terminate = true;
+                            break;
+                        }
+
+                        if (p != null && p[0].startsWith("winner")) {
+                            announeWinner(p[0].split("=")[1]);
+                        }
+
+                        if (p != null && p[0].startsWith("announce-book")) {
+                            String name = p[0].split("=")[2];
+                            String book = p[0].split("=")[1];
+                            System.out.println(String.format("Player '%s' secured the following book: %s", name, book));
+                        }
+
                         if (p != null) {
                             int cardsPulled = 0;
                             String temp = "";
@@ -289,6 +307,9 @@ class InGameThread extends Thread {
                     }
                 }
 
+                if (terminate)
+                    break;
+
                 thisGame.setDeck(makeDeck(r.split("\n")[1]));
 
                 System.out.println("Playing");
@@ -296,22 +317,22 @@ class InGameThread extends Thread {
 
                 boolean continuePlaying = true;
                 while (continuePlaying) {
-                    if(thisGame.getDeck().getDeck().size() > 0){
-                        if(getMe().getHand().size()== 0){
-                            System.out.println("since you have an empty hand you may enter (1) to draw 5 cards or else skip your turn");
+                    if (thisGame.getDeck().getDeck().size() > 0) {
+                        if (getMe().getHand().size() == 0) {
+                            System.out.println(
+                                    "since you have an empty hand you may enter (1) to draw 5 cards or else skip your turn");
                             String choice = Player.bufferedReader.readLine().trim();
-                            if(choice.equals("1")){
-                                for(int i = 0; i < 5; i++){
-                                if(thisGame.getDeck().getDeck().size() >  0)
-                                getMe().getHand().add(thisGame.getDeck().draw());
+                            if (choice.equals("1")) {
+                                for (int i = 0; i < 5; i++) {
+                                    if (thisGame.getDeck().getDeck().size() > 0)
+                                        getMe().getHand().add(thisGame.getDeck().draw());
                                 }
-                            }
-                            else
-                            break;
+                            } else
+                                break;
                         }
                     }
-                    if(getMe().getHand().size() == 0)
-                    break;
+                    if (getMe().getHand().size() == 0)
+                        break;
                     System.out.print("Enter the rank of the card you want: ");
                     Player.bufferedReader = new BufferedReader(new InputStreamReader(System.in));
                     String rank = Player.bufferedReader.readLine().trim().toUpperCase();
@@ -320,39 +341,54 @@ class InGameThread extends Thread {
                         continue;
                     }
                     continuePlaying = fishing(rank);
-                    for(int i = 0; i < ranks.length; i++)
-                    thisGame.checkBooks(getMe().checkHand(ranks[i]));
+                    for (int i = 0; i < ranks.length; i++) {
+                        boolean temp = getMe().checkHand(ranks[i]);
+                        thisGame.checkBooks(temp);
+                        if (temp) {
+                            sendBookToAll(ranks[i]);
+                        }
+                    }
                     System.out.println(getMe().showHand());
                 }
-                if(thisGame.bookCounter < 13)
+                if (thisGame.bookCounter < 13)
                     sendYourMove();
-                else{
+                else {
                     String winner = "";
                     int max = 0;
-                    for(PlayerObj player : thisGame.getPlayers()){
-                        if(player.getBasket().size() > max){
+                    for (PlayerObj player : thisGame.getPlayers()) {
+                        if (player.getBasket().size() > max) {
                             max = player.getBasket().size();
                             winner = player.getName();
                         }
                     }
-                    // send winner message to dealer to announce the winner somehow
+                    if (getMe().getName().equals(thisGame.getDealer().getName())) {
+                        announeWinner(winner);
+                    } else {
+                        sendToPeer(winner, 1);
+                    }
                     break;
                 }
-            
-                
+
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
+    public void announeWinner(String winner) throws IOException {
+        for (int i = 0; i < thisGame.getPlayers().size(); i++) {
+            if (!thisGame.getPlayers().get(i).getName().equals(Player.name)) {
+                sendToPeer("winner=" + winner, i + 1);
+            }
+        }
+    }
+
     public void sendBookToAll(String rank) throws IOException {
-        String res = String.format("D%s C%s, H%s S%s", rank, rank, rank, rank);
+        String res = String.format("announce-book=D%s C%s, H%s S%s=%s", rank, rank, rank, rank, getMe().getName());
         for (int i = 0; i < thisGame.getPlayers().size(); i++) {
             if (!thisGame.getPlayers().get(i).getName().equals(Player.name)) {
                 sendToPeer(res, i + 1);
@@ -421,10 +457,11 @@ class InGameThread extends Thread {
         String[] temp = Player.decypherMessage(response[0]);
 
         if (temp[0].trim().equals("go-fish")) {
-            if (thisGame.getDeck().getDeck().size() > 0)
+            if (thisGame.getDeck().getDeck().size() > 0) {
+                System.out.println("Go fish");
                 getMe().getHand().add(thisGame.getDeck().draw());
-            else
-            System.out.println("The stock is empty");
+            } else
+                System.out.println("The stock is empty");
             return false;
         }
 

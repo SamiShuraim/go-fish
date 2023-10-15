@@ -45,8 +45,8 @@ public class GameObj {
         return this.seed;
     }
 
-    public void checkBooks(boolean bool){
-        if(bool)
+    public void checkBooks(boolean bool) {
+        if (bool)
             this.bookCounter++;
     }
 
