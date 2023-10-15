@@ -27,6 +27,7 @@ public class Player {
     static DatagramSocket socket_p;
     static InGameThread inGameThread;
 
+
     public static void main(String[] args) {
         /*
          * Establishes connection with manager.
@@ -194,6 +195,8 @@ class InGameThread extends Thread {
     DatagramSocket socket_r;
     DatagramSocket socket_p;
     GameObj thisGame;
+    private static String[] ranks = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+
 
     public InGameThread(DatagramSocket socket_r, DatagramSocket socket_p) {
         this.socket_r = socket_r;
@@ -227,7 +230,7 @@ class InGameThread extends Thread {
             if (!thisGame.getDealer().getName().equals(Player.name))
                 thisGame.setDeck(makeDeck(x.split("\n")[1]));
 
-            if (thisGame.getPlayers().size() < 3) {
+            if (thisGame.getPlayers().size() < 4) {
                 for (int i = 0; i < 7; i++) {
                     getMe().getHand().add(thisGame.getDeck().draw());
                 }
@@ -293,16 +296,22 @@ class InGameThread extends Thread {
 
                 boolean continuePlaying = true;
                 while (continuePlaying) {
-                    if(getMe().getHand().size()== 0){
-                        System.out.println("since you have an empty hand you may 1: draw 5 cards or 2: skip your turn");
-                        int choice = 1;
-                        if(choice == 1){
-                            for(int i = 0; i < 5; i++){
-                            if(thisGame.getDeck().getDeck().size() >  0)
-                            getMe().getHand().add(thisGame.getDeck().draw());
+                    if(thisGame.getDeck().getDeck().size() > 0){
+                        if(getMe().getHand().size()== 0){
+                            System.out.println("since you have an empty hand you may enter (1) to draw 5 cards or else skip your turn");
+                            String choice = Player.bufferedReader.readLine().trim();
+                            if(choice.equals("1")){
+                                for(int i = 0; i < 5; i++){
+                                if(thisGame.getDeck().getDeck().size() >  0)
+                                getMe().getHand().add(thisGame.getDeck().draw());
+                                }
                             }
+                            else
+                            break;
                         }
                     }
+                    if(getMe().getHand().size() == 0)
+                    break;
                     System.out.print("Enter the rank of the card you want: ");
                     Player.bufferedReader = new BufferedReader(new InputStreamReader(System.in));
                     String rank = Player.bufferedReader.readLine().trim().toUpperCase();
@@ -311,11 +320,26 @@ class InGameThread extends Thread {
                         continue;
                     }
                     continuePlaying = fishing(rank);
-                    
+                    for(int i = 0; i < ranks.length; i++)
+                    thisGame.checkBooks(getMe().checkHand(ranks[i]));
                     System.out.println(getMe().showHand());
                 }
-
-                sendYourMove();
+                if(thisGame.bookCounter < 13)
+                    sendYourMove();
+                else{
+                    String winner = "";
+                    int max = 0;
+                    for(PlayerObj player : thisGame.getPlayers()){
+                        if(player.getBasket().size() > max){
+                            max = player.getBasket().size();
+                            winner = player.getName();
+                        }
+                    }
+                    // send winner message to dealer to announce the winner somehow
+                    break;
+                }
+            
+                
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -392,7 +416,6 @@ class InGameThread extends Thread {
             getMe().getHand().add(thisGame.getDeck().draw());
             else
             System.out.println("The stock is empty");
-
             return false;
         }
 

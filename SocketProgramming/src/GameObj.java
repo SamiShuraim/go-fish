@@ -7,6 +7,7 @@ public class GameObj {
     private final PlayerObj dealer;
     private Deck deck;
     private int seed;
+    public int bookCounter;
 
     public GameObj(ArrayList<PlayerObj> players, PlayerObj dealer, int id, int seed) {
         this.id = id;
@@ -42,6 +43,11 @@ public class GameObj {
 
     public int getSeed() {
         return this.seed;
+    }
+
+    public void checkBooks(boolean bool){
+        if(bool)
+            this.bookCounter++;
     }
 
     @Override

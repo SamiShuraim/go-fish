@@ -9,7 +9,7 @@ public class PlayerObj {
     private ArrayList<GameObj> inGame;
     final private InetAddress inetAddress;
     private ArrayList<Card> hand = new ArrayList<Card>();
-    private ArrayList<Card>[] basket;
+    private ArrayList<ArrayList<Card>> basket;
 
     public PlayerObj(String name, String address, int m_port, int r_port, int p_port) throws UnknownHostException {
         this.name = name;
@@ -48,7 +48,7 @@ public class PlayerObj {
         return this.hand;
     }
 
-    public ArrayList<Card>[] getBasket() {
+    public ArrayList<ArrayList<Card>> getBasket() {
         return this.basket;
     }
 
@@ -68,7 +68,19 @@ public class PlayerObj {
         return str.substring(0, str.length() - 2) + '\n';
     }
 
-    public void checkHand(String rank){
+    public String showBasket(){
+        String str = "";
+        for(ArrayList<Card> book : this.basket){
+            for(Card c : book){
+                str += c.toString() + " ";
+            }
+            str += "\n";
+        }
+
+        return str;
+    }
+
+    public boolean checkHand(String rank){
         ArrayList<Card> tmp = new ArrayList<Card>();
         for (Card c : this.hand){
             if(c.getRank() == rank)
@@ -76,7 +88,10 @@ public class PlayerObj {
         }
         if(tmp.size() == 4){
             this.deleteCard(rank);
+            this.basket.add(tmp);
+            return true;
         }
+        return false;
     }
 
     public void deleteCard(String s) {
