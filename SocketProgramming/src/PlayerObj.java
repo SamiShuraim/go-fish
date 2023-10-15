@@ -104,10 +104,15 @@ public class PlayerObj {
     }
 
     public void deleteCardByRank(String rank) {
+        ArrayList<Card> temp = new ArrayList<>();
         for (Card c : hand) {
             if (c.getRank().equals(rank)) {
-                hand.remove(c);
+                temp.add(c);
             }
+        }
+
+        for (Card c : temp) {
+            hand.remove(c);
         }
     }
 
