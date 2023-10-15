@@ -351,6 +351,15 @@ class InGameThread extends Thread {
         }
     }
 
+    public void sendBookToAll(String rank) throws IOException {
+        String res = String.format("D%s C%s, H%s S%s", rank, rank, rank, rank);
+        for (int i = 0; i < thisGame.getPlayers().size(); i++) {
+            if (!thisGame.getPlayers().get(i).getName().equals(Player.name)) {
+                sendToPeer(res, i + 1);
+            }
+        }
+    }
+
     public void sendYourMove() throws IOException, InterruptedException {
         String[] temp = thisGame.getDeck().getDeck().toString().split(", ");
         temp[0] = temp[0].substring(1, temp[0].length());
@@ -412,8 +421,8 @@ class InGameThread extends Thread {
         String[] temp = Player.decypherMessage(response[0]);
 
         if (temp[0].trim().equals("go-fish")) {
-            if(thisGame.getDeck().getDeck().size() >  0)
-            getMe().getHand().add(thisGame.getDeck().draw());
+            if (thisGame.getDeck().getDeck().size() > 0)
+                getMe().getHand().add(thisGame.getDeck().draw());
             else
             System.out.println("The stock is empty");
             return false;
