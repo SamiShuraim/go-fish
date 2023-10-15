@@ -11,7 +11,6 @@ public class Card {
         x = x.strip().trim();
         this.suit = x.substring(0, 1);
         this.rank = x.substring(1, x.length());
-        System.out.println("New card " + this);
     }
 
     public String getSuit() {

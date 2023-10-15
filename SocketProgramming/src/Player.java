@@ -105,7 +105,8 @@ public class Player {
                     cypheredMessage = cypherMessage(new String[] { choice, name, k });
                     outputStream_m.println(cypheredMessage);
                     if (br_m.readLine().startsWith("SUCCESS")) {
-                        br_m.lines().forEach(e -> gameInfo += e);
+                        br_m.lines().forEach(e -> gameInfo += e + "\n");
+                        gameInfo = gameInfo.trim();
                         startInGameThread(true, Integer.valueOf(k), null);
                     }
 
@@ -202,9 +203,30 @@ class InGameThread extends Thread {
 
     public void run() {
         try {
-            System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+            System.out.println("\n".repeat(20));
             setup();
             System.out.println("You are registered successfully.");
+
+            String x;
+            boolean gotRequest = false;
+            while (true) {
+                try {
+                    Thread.sleep(500);
+                    x = listenToSocketR();
+
+                    if (x != null && x.split("\n")[0].trim().equals("your-move")) {
+                        gotRequest = true;
+                        break;
+                    }
+
+                    if (thisGame.getDealer().getName().equals(Player.name))
+                        break;
+
+                    System.out.println("Waiting");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 
             if (thisGame.getPlayers().size() < 3) {
                 for (int i = 0; i < 7; i++) {
@@ -224,8 +246,8 @@ class InGameThread extends Thread {
 
             System.out.println(getMe().showHand());
 
-            if (thisGame.getDealer().getName().equals(Player.name)) {
-                sendToNextPlayer("your-move");
+            if (!(thisGame.getDealer().getName().equals(Player.name) && gotRequest)) {
+                sendYourMove();
             }
 
             while (true) { ////////////////////////////////////////////////////////// HERE
@@ -237,7 +259,7 @@ class InGameThread extends Thread {
                         r = listenToSocketR();
                         p = listenToSocketP();
 
-                        if (r != null) {
+                        if (r != null && r.split("\n")[0].trim().equals("your-move")) {
                             break;
                         }
                         if (p != null) {
@@ -263,10 +285,12 @@ class InGameThread extends Thread {
                         e.printStackTrace();
                     }
                 }
+
+                thisGame.setDeck(makeDeck(r.split("\n")[1]));
+
                 System.out.println("Playing");
                 System.out.println(getMe().showHand());
 
-                // Player.bufferedReader.close();
                 boolean continuePlaying = true;
                 while (continuePlaying) {
                     System.out.print("Enter the rank of the card you want: ");
@@ -279,7 +303,7 @@ class InGameThread extends Thread {
                     continuePlaying = fishing(rank);
                     System.out.println(getMe().showHand());
                 }
-                sendToNextPlayer("your-move");
+                sendYourMove();
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -291,6 +315,22 @@ class InGameThread extends Thread {
         }
     }
 
+    public void sendYourMove() throws IOException, InterruptedException {
+        String[] temp = thisGame.getDeck().getDeck().toString().split(", ");
+        temp[0] = temp[0].substring(1, temp[0].length());
+        temp[temp.length - 1] = temp[temp.length - 1].substring(0, temp[0].length());
+        String deck = Player.cypherMessage(temp);
+        sendToNextPlayer("your-move" + "\n" + deck);
+    }
+
+    public static ArrayList<Card> makeDeck(String str) {
+        ArrayList<Card> res = new ArrayList<>();
+        for (String cardStr : Player.decypherMessage(str)) {
+            res.add(new Card(cardStr));
+        }
+        return res;
+    }
+
     public boolean rankInHand(String rank) {
         for (Card c : getMe().getHand()) {
             if (c.getRank().equals(rank.trim()))
@@ -300,11 +340,19 @@ class InGameThread extends Thread {
     }
 
     public boolean fishing(String rank) throws IOException, InterruptedException {
-        System.out.println(thisGame.toString());
-        System.out.print("Enter the number of the player you want to fish from: ");
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-        int res = Integer.parseInt(bufferedReader.readLine().trim());
+        int res = 0;
+        while (true) {
+            System.out.println(thisGame.toString());
+            System.out.print("Enter the number of the player you want to fish from: ");
+            res = Integer.parseInt(bufferedReader.readLine().trim());
+            if (thisGame.getPlayers().get(res - 1).getName().equals(Player.name)) {
+                System.out.println("You cannot fish from yourself. Choose a different number.");
+            } else
+                break;
+        }
+
         String[] response;
         sendToPeer(rank, res);
         while (true) {
@@ -372,13 +420,14 @@ class InGameThread extends Thread {
         String gameId = strings[0];
         PlayerObj dealer = createPlayerObj(new String[] { strings[1], strings[2], strings[3], strings[4], strings[5] });
         ArrayList<PlayerObj> players = new ArrayList<>();
+        int seed = Integer.parseInt(strings[strings.length - 1]);
         for (int i = 0; i < (strings.length - 1) / 5; i++) {
 
             PlayerObj temp = createPlayerObj(new String[] { strings[i * 5 + 1], strings[i * 5 + 2], strings[i * 5 + 3],
                     strings[i * 5 + 4], strings[i * 5 + 5] });
             players.add(temp);
         }
-        thisGame = new GameObj(players, dealer, Integer.parseInt(gameId));
+        thisGame = new GameObj(players, dealer, Integer.parseInt(gameId), seed);
     }
 
     public void sendToPeer(String message, String address, String port)
@@ -418,8 +467,7 @@ class InGameThread extends Thread {
             byte[] buffer = new byte[350];
             DatagramPacket datagram = new DatagramPacket(buffer, 350);
             socket_r.receive(datagram);
-            if (new String(buffer).trim().toLowerCase().equals("your-move"))
-                return new String(buffer);
+            return new String(buffer);
         } catch (SocketTimeoutException e) {
 
         } catch (Exception e) {

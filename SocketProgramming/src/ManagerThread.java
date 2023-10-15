@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class ManagerThread extends Thread {
     Socket dataSocket;
@@ -195,6 +196,7 @@ public class ManagerThread extends Thread {
             if (player.getName().equals(name))
                 dealer = player;
         newPlayers.add(dealer);
+        Manager.players.remove(dealer);
         Manager.playersLock.unlock();
 
         if (dealer == null)
@@ -205,11 +207,13 @@ public class ManagerThread extends Thread {
             PlayerObj player = Manager.players.get((int) (Math.random() * Manager.players.size()));
             if (player.equals(dealer))
                 i--;
-            else
+            else {
                 newPlayers.add(player);
+                Manager.players.remove(player);
+            }
         }
         Manager.gamesLock.lock();
-        GameObj game = new GameObj(newPlayers, dealer);
+        GameObj game = new GameObj(newPlayers, dealer, new Random().nextInt(200));
         Manager.games.add(game);
 
         ArrayList<String> temp = new ArrayList<>();
@@ -225,7 +229,7 @@ public class ManagerThread extends Thread {
         for (int i = 0; i < temp2.length; i++)
             temp2[i] = temp.get(i);
 
-        res += cypherMessage(temp2);
+        res += cypherMessage(temp2) + "\n" + game.getSeed();
         Manager.gamesLock.unlock();
         Manager.playersLock.unlock();
 
@@ -241,6 +245,11 @@ public class ManagerThread extends Thread {
         for (GameObj g : Manager.games) {
             if (g.getId() == gameId && g.getDealer().getName().equals(playerName)) {
                 res = "SUCCESS\n";
+                Manager.playersLock.lock();
+                for (PlayerObj p : g.getPlayers()) {
+                    Manager.players.add(p);
+                }
+                Manager.playersLock.unlock();
                 Manager.games.remove(g);
                 break;
             }

@@ -1,19 +1,23 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 public class GameObj {
     private final int id;
     private final ArrayList<PlayerObj> players; // This should include the dealer
     private final PlayerObj dealer;
-    private Deck deck = new Deck();
+    private Deck deck;
+    private int seed;
 
-    public GameObj(ArrayList<PlayerObj> players, PlayerObj dealer, int id) {
+    public GameObj(ArrayList<PlayerObj> players, PlayerObj dealer, int id, int seed) {
         this.id = id;
         this.players = players;
         this.dealer = dealer;
+        this.seed = seed;
+        this.deck = new Deck(seed);
     }
 
-    public GameObj(ArrayList<PlayerObj> players, PlayerObj dealer) {
-        this(players, dealer, Manager.gameId++);
+    public GameObj(ArrayList<PlayerObj> players, PlayerObj dealer, int seed) {
+        this(players, dealer, Manager.gameId++, seed);
     }
 
     public int getId() {
@@ -30,6 +34,14 @@ public class GameObj {
 
     public Deck getDeck() {
         return deck;
+    }
+
+    public void setDeck(ArrayList<Card> x) {
+        this.deck = new Deck(x);
+    }
+
+    public int getSeed() {
+        return this.seed;
     }
 
     @Override
