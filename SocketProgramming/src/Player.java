@@ -67,6 +67,7 @@ public class Player {
                 DatagramPacket datagram = new DatagramPacket(buffer, 350);
                 while (getUserInputThread.isAlive()) {
                     try {
+                        Thread.sleep(500);
                         socket_r.receive(datagram);
                         startInGameThread(false, 0, buffer);
                         inGameThread.join();
@@ -203,52 +204,6 @@ class InGameThread extends Thread {
         }
     }
 
-    // public void setup() throws IOException {
-    // boolean foundMyself = false;
-    // boolean finalPlayerNotDealer = false;
-    // PlayerObj nextPlayer = null;
-    // PlayerObj dealer = null;
-    // for (int i = 3; i < Player.gameInfo.split("\n").length - 2; i++) {
-    // String s = Player.gameInfo.split("\n")[i];
-
-    // if (Player.gameInfo.split("\n")[Player.gameInfo.split("\n").length -
-    // 1].equals("0"))
-    // return;
-
-    // String[] res = findRealStrings(s);
-    // PlayerObj temp = new PlayerObj(res[0], res[1], Integer.parseInt(res[2]),
-    // Integer.parseInt(res[3]),
-    // Integer.parseInt(res[4]));
-    // if (temp.getName().equals(Player.name)) {
-    // foundMyself = true;
-    // continue;
-    // }
-
-    // if (s.trim().substring(0, 3).trim().equals("1")) {
-    // res = findRealStrings(s);
-    // dealer = new PlayerObj(res[0], res[1], Integer.parseInt(res[2]),
-    // Integer.parseInt(res[3]),
-    // Integer.parseInt(res[4]));
-    // }
-
-    // if (foundMyself) {
-    // res = findRealStrings(s);
-    // nextPlayer = new PlayerObj(res[0], res[1], Integer.parseInt(res[2]),
-    // Integer.parseInt(res[3]),
-    // Integer.parseInt(res[4]));
-    // finalPlayerNotDealer = true;
-    // break;
-    // }
-    // }
-
-    // if (!finalPlayerNotDealer) {
-    // System.out.println("Next is dealer");
-    // nextPlayer = dealer;
-    // }
-
-    // sendToNextPlayer(Player.gameInfo, nextPlayer);
-    // }
-
     public void setup() throws NumberFormatException, IOException {
         if (Player.gameInfo.split("\n")[1].trim().equals("0"))
             return;
@@ -308,5 +263,20 @@ class InGameThread extends Thread {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, p.getInetAddress(), p.getP_port());
 
         socket_p.send(packet);
+    }
+
+    public String listenToSocketP() {
+        try {
+            byte[] buffer = new byte[350];
+            DatagramPacket datagram = new DatagramPacket(buffer, 350);
+            Thread.sleep(500);
+            socket_r.receive(datagram);
+            return new String(buffer);
+        } catch (SocketTimeoutException e) {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
