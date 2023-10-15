@@ -87,7 +87,7 @@ public class PlayerObj {
                 tmp.add(c);
         }
         if (tmp.size() == 4) {
-            this.deleteCard(rank);
+            this.deleteCardByRank(rank);
             this.basket.add(tmp);
             return true;
         }
@@ -99,6 +99,14 @@ public class PlayerObj {
             if (c.toString().equals(s.trim())) {
                 hand.remove(c);
                 return;
+            }
+        }
+    }
+
+    public void deleteCardByRank(String rank) {
+        for (Card c : hand) {
+            if (c.getRank().equals(rank)) {
+                hand.remove(c);
             }
         }
     }
