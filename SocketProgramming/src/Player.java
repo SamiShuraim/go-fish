@@ -313,4 +313,13 @@ class InGameThread extends Thread {
         }
         return null;
     }
+
+    public PlayerObj getMe() {
+        PlayerObj res = null;
+        for (PlayerObj p : thisGame.getPlayers())
+            if (p.getName().equals(Player.name))
+                res = p;
+
+        return res;
+    }
 }
