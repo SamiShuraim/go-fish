@@ -327,6 +327,8 @@ class InGameThread extends Thread {
                                     if (thisGame.getDeck().getDeck().size() > 0)
                                         getMe().getHand().add(thisGame.getDeck().draw());
                                 }
+                                for (int i = 0; i < ranks.length; i++)
+                                thisGame.checkBooks(getMe().checkHand(ranks[i]));
                             } else
                                 break;
                         }
