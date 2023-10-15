@@ -270,7 +270,7 @@ class InGameThread extends Thread {
             byte[] buffer = new byte[350];
             DatagramPacket datagram = new DatagramPacket(buffer, 350);
             Thread.sleep(500);
-            socket_r.receive(datagram);
+            socket_p.receive(datagram);
             return new String(buffer);
         } catch (SocketTimeoutException e) {
 
