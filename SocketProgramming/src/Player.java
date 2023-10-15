@@ -207,14 +207,12 @@ class InGameThread extends Thread {
             System.out.println("You are registered successfully.");
 
             String x;
-            boolean gotRequest = false;
             while (true) {
                 try {
                     Thread.sleep(500);
                     x = listenToSocketR();
 
-                    if (x != null && x.split("\n")[0].trim().equals("your-move")) {
-                        gotRequest = true;
+                    if (x != null && x.split("\n")[0].trim().equals("take-cards")) {
                         break;
                     }
 
@@ -241,8 +239,10 @@ class InGameThread extends Thread {
 
             System.out.println(getMe().showHand());
 
-            if (!(thisGame.getDealer().getName().equals(Player.name) && gotRequest)) {
+            if (thisGame.getDealer().getName().equals(Player.name) && x.split("\n")[0].trim().equals("take-cards")) {
                 sendYourMove();
+            } else {
+                sendTakeCards();
             }
 
             while (true) { ////////////////////////////////////////////////////////// HERE
@@ -253,6 +253,11 @@ class InGameThread extends Thread {
                         Thread.sleep(500);
                         r = listenToSocketR();
                         p = listenToSocketP();
+
+                        if (r != null && r.split("\n")[0].trim().equals("take-cards")) {
+                            thisGame.setDeck(makeDeck(r.split("\n")[1]));
+                            sendYourMove();
+                        }
 
                         if (r != null && r.split("\n")[0].trim().equals("your-move")) {
                             break;
@@ -285,7 +290,6 @@ class InGameThread extends Thread {
 
                 System.out.println("Playing");
                 System.out.println(getMe().showHand());
-                System.out.println(thisGame.getSeed());
 
                 boolean continuePlaying = true;
                 while (continuePlaying) {
@@ -310,6 +314,7 @@ class InGameThread extends Thread {
                     
                     System.out.println(getMe().showHand());
                 }
+
                 sendYourMove();
             }
         } catch (UnknownHostException e) {
@@ -328,6 +333,14 @@ class InGameThread extends Thread {
         temp[temp.length - 1] = temp[temp.length - 1].substring(0, temp[0].length());
         String deck = Player.cypherMessage(temp);
         sendToNextPlayer("your-move" + "\n" + deck);
+    }
+
+    public void sendTakeCards() throws IOException, InterruptedException {
+        String[] temp = thisGame.getDeck().getDeck().toString().split(", ");
+        temp[0] = temp[0].substring(1, temp[0].length());
+        temp[temp.length - 1] = temp[temp.length - 1].substring(0, temp[0].length());
+        String deck = Player.cypherMessage(temp);
+        sendToNextPlayer("take-cards" + "\n" + deck);
     }
 
     public static ArrayList<Card> makeDeck(String str) {
@@ -379,6 +392,7 @@ class InGameThread extends Thread {
             getMe().getHand().add(thisGame.getDeck().draw());
             else
             System.out.println("The stock is empty");
+
             return false;
         }
 
