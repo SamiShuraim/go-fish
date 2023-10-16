@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -336,6 +337,13 @@ class InGameThread extends Thread {
                                     thisGame.checkBooks(temp);
                                     if (temp) {
                                         sendBookToAll(ranks[i]);
+                                        System.out
+                                                .println(String.format("You got this book: D%s C%s, H%s S%s", ranks[i],
+                                                        ranks[i], ranks[i], ranks[i]));
+                                        System.out.println("You now have the following books: ");
+                                        getMe().addToBasket(ranks[i]);
+                                        getMe().showBasket();
+                                        System.out.println();
                                     }
                                 }
                             } else
@@ -357,6 +365,12 @@ class InGameThread extends Thread {
                         thisGame.checkBooks(temp);
                         if (temp) {
                             sendBookToAll(ranks[i]);
+                            System.out.println(String.format("You got this book: D%s C%s, H%s S%s", ranks[i],
+                                    ranks[i], ranks[i], ranks[i]));
+                            System.out.println("You now have the following books: ");
+                            getMe().addToBasket(ranks[i]);
+                            getMe().showBasket();
+                            System.out.println();
                         }
                     }
                     System.out.println(getMe().showHand());
@@ -450,13 +464,19 @@ class InGameThread extends Thread {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         int res = 0;
         while (true) {
-            System.out.println(thisGame.toString());
-            System.out.print("Enter the number of the player you want to fish from: ");
-            res = Integer.parseInt(bufferedReader.readLine().trim());
-            if (thisGame.getPlayers().get(res - 1).getName().equals(Player.name)) {
-                System.out.println("You cannot fish from yourself. Choose a different number.");
-            } else
-                break;
+            try {
+                System.out.println(thisGame.toString());
+                System.out.print("Enter the number of the player you want to fish from: ");
+                res = Integer.parseInt(bufferedReader.readLine().trim());
+                if (thisGame.getPlayers().get(res - 1).getName().equals(Player.name)) {
+                    System.out.println("You cannot fish from yourself. Choose a different number.");
+                } else
+                    break;
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Please enter a number.");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         String[] response;
@@ -481,6 +501,12 @@ class InGameThread extends Thread {
                 System.out.println("The stock is empty");
             return false;
         }
+
+        String str = "";
+        for (String s : temp)
+            str += s + " ";
+
+        System.out.println("You recieved the following cards: " + str.trim());
 
         for (String s : temp) {
             getMe().getHand().add(new Card(s));

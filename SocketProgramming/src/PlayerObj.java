@@ -20,6 +20,10 @@ public class PlayerObj {
         this.inetAddress = InetAddress.getByName(address);
     }
 
+    public static void main(String[] args) throws UnknownHostException {
+        PlayerObj a = new PlayerObj("s", "192.168.0.252", 8501, 8502, 8503);
+    }
+
     public String getName() {
         return this.name;
     }
@@ -80,10 +84,19 @@ public class PlayerObj {
         return str;
     }
 
+    public void addToBasket(String rank) {
+        ArrayList<Card> res = new ArrayList<>();
+        String temp = String.format("D%s C%s, H%s S%s", rank, rank, rank, rank);
+        for (String cardStr : temp.split(" ")) {
+            res.add(new Card(cardStr));
+        }
+        basket.add(res);
+    }
+
     public boolean checkHand(String rank) {
         ArrayList<Card> tmp = new ArrayList<Card>();
         for (Card c : this.hand) {
-            if (c.getRank().equals(rank))
+            if (c.getRank().equals(rank.trim()))
                 tmp.add(c);
         }
         if (tmp.size() == 4) {
