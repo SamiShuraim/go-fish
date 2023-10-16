@@ -55,9 +55,9 @@ public class Player {
                     return;
                 }
                 GetUserInputThread getUserInputThread = new GetUserInputThread();
-                inGameThread = new InGameThread(socket_r, socket_p);
-
                 Socket socket_m = new Socket(ServerAddress, serverPortNum);
+
+                inGameThread = new InGameThread(socket_r, socket_p, socket_m);
                 PrintStream outputStream_m = new PrintStream(socket_m.getOutputStream());
                 BufferedReader br_m = new BufferedReader(new InputStreamReader(socket_m.getInputStream()));
 
@@ -191,14 +191,16 @@ class GetUserInputThread extends Thread {
 }
 
 class InGameThread extends Thread {
+    Socket socket_m;
     DatagramSocket socket_r;
     DatagramSocket socket_p;
     GameObj thisGame;
     private static String[] ranks = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
 
-    public InGameThread(DatagramSocket socket_r, DatagramSocket socket_p) {
+    public InGameThread(DatagramSocket socket_r, DatagramSocket socket_p, Socket socket_m) {
         this.socket_r = socket_r;
         this.socket_p = socket_p;
+        this.socket_m = socket_m;
     }
 
     public void run() {
@@ -264,7 +266,8 @@ class InGameThread extends Thread {
                             break;
                         }
 
-                        if (r != null && r.split("\n")[0].trim().startsWith("winner")) {
+                        if (p != null && p[0].split("=")[0].trim().equals("winner")
+                                && !getMe().getName().equals(thisGame.getDealer().getName())) {
                             System.out.println("\n".repeat(20));
                             System.out.println("THE WINNER IS: " + r.split("=")[1]);
                             System.out.println("Enter anything to exit: ");
@@ -274,7 +277,8 @@ class InGameThread extends Thread {
                         }
 
                         if (p != null && p[0].startsWith("winner")) {
-                            announeWinner(p[0].split("=")[1]);
+                            announceWinner(p[0].split("=")[1]);
+                            endGame();
                         }
 
                         if (p != null && p[0].startsWith("announce-book")) {
@@ -362,9 +366,9 @@ class InGameThread extends Thread {
                         }
                     }
                     if (getMe().getName().equals(thisGame.getDealer().getName())) {
-                        announeWinner(winner);
+                        announceWinner(winner);
                     } else {
-                        sendToPeer(winner, 1);
+                        sendToPeer("winner=" + winner, 1);
                     }
                     break;
                 }
@@ -379,7 +383,13 @@ class InGameThread extends Thread {
         }
     }
 
-    public void announeWinner(String winner) throws IOException {
+    public void endGame() throws IOException {
+        PrintStream outputStream_m = new PrintStream(socket_m.getOutputStream());
+        outputStream_m.println(Player.cypherMessage(
+                new String[] { "end", thisGame.getDealer().getName(), String.valueOf(thisGame.getId()) }));
+    }
+
+    public void announceWinner(String winner) throws IOException {
         for (int i = 0; i < thisGame.getPlayers().size(); i++) {
             if (!thisGame.getPlayers().get(i).getName().equals(Player.name)) {
                 sendToPeer("winner=" + winner, i + 1);
