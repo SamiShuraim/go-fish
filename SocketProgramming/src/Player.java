@@ -243,7 +243,8 @@ class InGameThread extends Thread {
 
             System.out.println(getMe().showHand());
 
-            if (thisGame.getDealer().getName().equals(Player.name) && x.split("\n")[0].trim().equals("take-cards")) {
+            if (thisGame.getDealer().getName().equals(Player.name) && x != null
+                    && x.split("\n")[0].trim().equals("take-cards")) {
                 sendYourMove();
             } else {
                 sendTakeCards();
