@@ -20,10 +20,6 @@ public class PlayerObj {
         this.inetAddress = InetAddress.getByName(address);
     }
 
-    public static void main(String[] args) throws UnknownHostException {
-        PlayerObj a = new PlayerObj("s", "192.168.0.252", 8501, 8502, 8503);
-    }
-
     public String getName() {
         return this.name;
     }
