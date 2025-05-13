@@ -1,2 +1,4 @@
 *.docx
 *.class
+.pdf
+.gitignore
