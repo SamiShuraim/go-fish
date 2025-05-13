@@ -18,6 +18,34 @@ This project implements a multiplayer "Go Fish" card game using Java socket prog
     *   Uses TCP sockets for client-server communication with the `Manager`.
     *   Uses UDP sockets for peer-to-peer communication during active gameplay.
 
+## Project Structure
+
+```
+Project/
+├── backend/                # Java backend for the Go Fish game
+│   ├── .vscode/           # (If any VS Code configuration files exist)
+│   ├── lib/               # (If any external libraries are used)
+│   └── src/               # Contains all Java source code
+│       ├── Card.java      # Represents a playing card
+│       ├── Deck.java      # Manages the deck of cards
+│       ├── GameObj.java   # Represents a game session
+│       ├── Manager.java   # The central server that manages player registration and games
+│       ├── ManagerThread.java # Handles individual client connections to the Manager
+│       ├── Player.java    # The client application for players
+│       └── PlayerObj.java # Represents a player in the game
+│
+├── frontend/              # React frontend (new addition)
+│   ├── public/            # Public assets
+│   ├── src/               # React source code
+│   ├── package.json       # NPM dependencies
+│   └── ...                # Other React app files
+│
+├── .gitignore
+├── FinalProjectReport.docx
+├── FinalProjectReport.pdf
+└── README.md              # This file
+```
+
 ## Original Command-Line Interface (CLI)
 
 ### Prerequisites
@@ -28,9 +56,9 @@ This project implements a multiplayer "Go Fish" card game using Java socket prog
 ### Running the Game
 
 1.  **Compile the Java files:**
-    Navigate to the `SocketProgramming/src` directory and compile all `.java` files.
+    Navigate to the `backend/src` directory and compile all `.java` files.
     ```bash
-    cd SocketProgramming/src
+    cd backend/src
     javac *.java
     ```
 
@@ -71,33 +99,33 @@ This project implements a multiplayer "Go Fish" card game using Java socket prog
 
     Follow the on-screen prompts to play the game.
 
-## Future Plans: React Frontend
+## React Frontend (Under Development)
 
-The current implementation uses a command-line interface. The project is planned to be refactored to:
+The project now includes a React-based frontend for a more modern user experience:
 
-*   Separate the game logic (backend) from the user interface.
-*   Develop a React-based frontend to provide a graphical user interface for a richer user experience.
-*   Adapt the socket communication to work seamlessly with a web-based frontend, likely involving WebSockets or a similar technology.
+### Prerequisites
 
-## Project Structure
+*   Node.js and npm installed.
 
-```
-Project/
-├── SocketProgramming/
-│   ├── .vscode/
-│   ├── lib/      # (If any external libraries are used)
-│   └── src/      # Contains all Java source code (.java files) and compiled classes (.class files)
-│       ├── Card.java
-│       ├── Deck.java
-│       ├── GameObj.java
-│       ├── GetUserInputThread.java
-│       ├── InGameThread.java
-│       ├── Manager.java
-│       ├── ManagerThread.java
-│       ├── Player.java
-│       └── PlayerObj.java
-├── .gitignore
-├── FinalProjectReport.docx
-├── FinalProjectReport.pdf
-└── README.md       # This file
-```
+### Running the Frontend
+
+1.  **Install dependencies:**
+    ```bash
+    cd frontend
+    npm install
+    ```
+
+2.  **Start the development server:**
+    ```bash
+    npm start
+    ```
+    This will start the React development server, typically on port 3000.
+
+### Development Plan
+
+The React frontend is currently under development. The plan is to:
+
+*   Create a user-friendly interface for player registration and game setup.
+*   Implement real-time game state visualization using React components.
+*   Connect the frontend to the Java backend using WebSockets or a similar technology.
+*   Replace command-line input with graphical UI elements.

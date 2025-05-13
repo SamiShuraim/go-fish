@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoFish Test Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .card {
+            background: #f7f7f7;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        button:hover {
+            background: #3367d6;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        pre {
+            background: #eee;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+            max-height: 200px;
+        }
+        #playerList, #gameList {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>GoFish Test Client</h1>
+    
+    <div class="container">
+        <div class="card">
+            <h2>Player Registration</h2>
+            <div>
+                <label for="playerName">Player Name:</label>
+                <input type="text" id="playerName" value="Player1">
+            </div>
+            <div>
+                <label for="playerAddress">Address:</label>
+                <input type="text" id="playerAddress" value="127.0.0.1">
+            </div>
+            <div>
+                <label for="playerPort">M-Port:</label>
+                <input type="number" id="playerPort" value="5000">
+            </div>
+            <button id="registerBtn">Register Player</button>
+            
+            <h3>Players</h3>
+            <button id="getPlayersBtn">Get All Players</button>
+            <div id="playerList"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Game Management</h2>
+            <div>
+                <label for="dealerId">Dealer ID:</label>
+                <input type="text" id="dealerId">
+            </div>
+            <div>
+                <label for="opponents">Number of Opponents:</label>
+                <input type="number" id="opponents" value="1" min="1" max="3">
+            </div>
+            <button id="createGameBtn">Create Game</button>
+            
+            <h3>Games</h3>
+            <button id="getGamesBtn">Get All Games</button>
+            <div id="gameList"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Game Actions</h2>
+            <div>
+                <label for="gameId">Game ID:</label>
+                <input type="text" id="gameId">
+            </div>
+            <div>
+                <label for="askingPlayerId">Asking Player ID:</label>
+                <input type="text" id="askingPlayerId">
+            </div>
+            <div>
+                <label for="targetPlayerId">Target Player ID:</label>
+                <input type="text" id="targetPlayerId">
+            </div>
+            <div>
+                <label for="rank">Card Rank:</label>
+                <select id="rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+            </div>
+            <button id="askCardBtn">Ask For Card</button>
+            <button id="endGameBtn">End Game</button>
+        </div>
+    </div>
+    
+    <div class="card" style="margin-top: 20px;">
+        <h2>WebSocket Test</h2>
+        <button id="connectWsBtn">Connect WebSocket</button>
+        <button id="disconnectWsBtn">Disconnect</button>
+        <div>
+            <label for="selectedGameId">Game ID to Join:</label>
+            <input type="text" id="selectedGameId">
+            <button id="joinGameBtn">Join Game</button>
+        </div>
+        <h3>WebSocket Messages</h3>
+        <pre id="wsMessages"></pre>
+    </div>
+    
+    <div class="card" style="margin-top: 20px;">
+        <h2>API Response</h2>
+        <pre id="response"></pre>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    
+    <script>
+        const API_URL = 'http://localhost:8080/api';
+        const WS_URL = 'http://localhost:8080/gofish-websocket';
+        let stompClient = null;
+        let currentPlayerId = null;
+        
+        // Player Registration
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            const name = document.getElementById('playerName').value;
+            const address = document.getElementById('playerAddress').value;
+            const mPort = parseInt(document.getElementById('playerPort').value);
+            
+            try {
+                const response = await fetch(`${API_URL}/players`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, address, mPort })
+                });
+                
+                const data = await response.json();
+                displayResponse(data);
+                
+                // Save player ID for later use
+                if (data.id) {
+                    currentPlayerId = data.id;
+                    document.getElementById('askingPlayerId').value = data.id;
+                    document.getElementById('dealerId').value = data.id;
+                }
+                
+                // Refresh player list
+                getPlayers();
+            } catch (error) {
+                displayResponse({ error: error.message });
+            }
+        });
+        
+        // Get All Players
+        document.getElementById('getPlayersBtn').addEventListener('click', getPlayers);
+        
+        async function getPlayers() {
+            try {
+                const response = await fetch(`${API_URL}/players`);
+                const data = await response.json();
+                
+                const playerList = document.getElementById('playerList');
+                playerList.innerHTML = '';
+                
+                data.forEach(player => {
+                    const playerItem = document.createElement('div');
+                    playerItem.textContent = `${player.name} (ID: ${player.id})`;
+                    playerItem.style.cursor = 'pointer';
+                    playerItem.addEventListener('click', () => {
+                        document.getElementById('targetPlayerId').value = player.id;
+                    });
+                    playerList.appendChild(playerItem);
+                });
+                
+                displayResponse(data);
+            } catch (error) {
+                displayResponse({ error: error.message });
+            }
+        }
+        
+        // Create Game
+        document.getElementById('createGameBtn').addEventListener('click', async () => {
+            const dealerId = document.getElementById('dealerId').value;
+            const numberOfOpponents = parseInt(document.getElementById('opponents').value);
+            
+            try {
+                const response = await fetch(`${API_URL}/games`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ dealerId, numberOfOpponents })
+                });
+                
+                const data = await response.json();
+                displayResponse(data);
+                
+                // Save game ID and refresh game list
+                if (data.id) {
+                    document.getElementById('gameId').value = data.id;
+                    document.getElementById('selectedGameId').value = data.id;
+                }
+                
+                getGames();
+            } catch (error) {
+                displayResponse({ error: error.message });
+            }
+        });
+        
+        // Get All Games
+        document.getElementById('getGamesBtn').addEventListener('click', getGames);
+        
+        async function getGames() {
+            try {
+                const response = await fetch(`${API_URL}/games`);
+                const data = await response.json();
+                
+                const gameList = document.getElementById('gameList');
+                gameList.innerHTML = '';
+                
+                data.forEach(game => {
+                    const gameItem = document.createElement('div');
+                    gameItem.textContent = `Game ID: ${game.id} (${game.players.length} players)`;
+                    gameItem.style.cursor = 'pointer';
+                    gameItem.addEventListener('click', () => {
+                        document.getElementById('gameId').value = game.id;
+                        document.getElementById('selectedGameId').value = game.id;
+                    });
+                    gameList.appendChild(gameItem);
+                });
+                
+                displayResponse(data);
+            } catch (error) {
+                displayResponse({ error: error.message });
+            }
+        }
+        
+        // Ask For Card
+        document.getElementById('askCardBtn').addEventListener('click', async () => {
+            const gameId = document.getElementById('gameId').value;
+            const askingPlayerId = document.getElementById('askingPlayerId').value;
+            const targetPlayerId = document.getElementById('targetPlayerId').value;
+            const rank = document.getElementById('rank').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/games/${gameId}/ask`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ askingPlayerId, targetPlayerId, rank })
+                });
+                
+                const data = await response.json();
+                displayResponse(data);
+            } catch (error) {
+                displayResponse({ error: error.message });
+            }
+        });
+        
+        // End Game
+        document.getElementById('endGameBtn').addEventListener('click', async () => {
+            const gameId = document.getElementById('gameId').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/games/${gameId}/end`, {
+                    method: 'POST'
+                });
+                
+                displayResponse({ success: true, message: 'Game ended' });
+                getGames();
+            } catch (error) {
+                displayResponse({ error: error.message });
+            }
+        });
+        
+        // WebSocket Connection
+        document.getElementById('connectWsBtn').addEventListener('click', connectWebSocket);
+        document.getElementById('disconnectWsBtn').addEventListener('click', disconnectWebSocket);
+        document.getElementById('joinGameBtn').addEventListener('click', joinGame);
+        
+        function connectWebSocket() {
+            const socket = new SockJS(WS_URL);
+            stompClient = Stomp.over(socket);
+            
+            stompClient.connect({}, frame => {
+                displayWsMessage('Connected: ' + frame);
+                
+                // Subscribe to player updates
+                stompClient.subscribe('/topic/players', response => {
+                    displayWsMessage('Received player update: ' + response.body);
+                });
+                
+                // Subscribe to game updates
+                stompClient.subscribe('/topic/games', response => {
+                    displayWsMessage('Received game update: ' + response.body);
+                });
+            }, error => {
+                displayWsMessage('Error connecting to WebSocket: ' + error);
+            });
+        }
+        
+        function disconnectWebSocket() {
+            if (stompClient) {
+                stompClient.disconnect();
+                displayWsMessage('Disconnected from WebSocket');
+            }
+        }
+        
+        function joinGame() {
+            const gameId = document.getElementById('selectedGameId').value;
+            const playerId = currentPlayerId;
+            
+            if (!stompClient || !gameId || !playerId) {
+                displayWsMessage('Error: Must connect WebSocket and have valid Game ID and Player ID');
+                return;
+            }
+            
+            // Subscribe to game-specific topics
+            stompClient.subscribe(`/topic/game/${gameId}`, response => {
+                displayWsMessage(`Game update for ${gameId}: ${response.body}`);
+            });
+            
+            stompClient.subscribe(`/topic/game/${gameId}/card-request`, response => {
+                displayWsMessage(`Card request in game ${gameId}: ${response.body}`);
+            });
+            
+            stompClient.subscribe(`/topic/game/${gameId}/book`, response => {
+                displayWsMessage(`Book formed in game ${gameId}: ${response.body}`);
+            });
+            
+            stompClient.subscribe(`/topic/game/${gameId}/chat`, response => {
+                displayWsMessage(`Chat message in game ${gameId}: ${response.body}`);
+            });
+            
+            // Send join game message
+            stompClient.send(`/app/join-game/${gameId}`, {}, JSON.stringify({ playerId }));
+            displayWsMessage(`Joined game ${gameId}`);
+        }
+        
+        function displayResponse(data) {
+            document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+        }
+        
+        function displayWsMessage(message) {
+            const messagesElement = document.getElementById('wsMessages');
+            const timestamp = new Date().toLocaleTimeString();
+            messagesElement.textContent += `[${timestamp}] ${message}\n`;
+            messagesElement.scrollTop = messagesElement.scrollHeight;
+        }
+    </script>
+</body>
+</html> 
